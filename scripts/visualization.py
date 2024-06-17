@@ -4,6 +4,57 @@ import numpy as np
 import trimesh
 
 
+class ObjectPlotter:
+    """
+    A class to plot 3D mesh objects using matplotlib.
+    """
+    
+    def __init__(self):
+        self.fig = plt.figure()
+        self.ax = self.fig.add_subplot(111, projection='3d')
+        self.bounding_box = None
+        self.x_min = None
+        self.y_min = None
+        self.z_min = None
+        self.x_max = None
+        self.y_max = None
+        self.z_max = None
+        
+    def add_mesh(self, mesh):
+        vertices = mesh.vertices
+        faces = mesh.faces
+        mesh_collection = Poly3DCollection(vertices[faces], alpha=0.1, edgecolor='k')
+        self.ax.add_collection3d(mesh_collection)
+        
+        bounding_box = mesh.bounds
+        if self.bounding_box is None:
+            self.bounding_box = bounding_box
+            self.x_min, self.y_min, self.z_min = bounding_box[0]
+            self.x_max, self.y_max, self.z_max = bounding_box[1]
+        else:
+            self.x_min = min(self.x_min, bounding_box[0][0])
+            self.y_min = min(self.y_min, bounding_box[0][1])
+            self.z_min = min(self.z_min, bounding_box[0][2])
+            self.x_max = max(self.x_max, bounding_box[1][0])
+            self.y_max = max(self.y_max, bounding_box[1][1])
+            self.z_max = max(self.z_max, bounding_box[1][2])
+    
+    def show(self):
+        # Set labels
+        self.ax.set_xlabel('X')
+        self.ax.set_ylabel('Y')
+        self.ax.set_zlabel('Z')
+
+        self.ax.set_xlim([self.x_min, self.x_max])
+        self.ax.set_ylim([self.y_min, self.y_max])
+        self.ax.set_zlim([self.z_min, self.z_max])
+        # Show the plot
+        plt.show()
+        
+    def add_points(self, points):
+        self.ax.scatter(*points.T)
+        
+    
 def create_plane_mesh(origin, normal, plane_size=2.0):
     """
     Create a plane mesh with the given origin and normal.
@@ -56,68 +107,3 @@ def create_plane_mesh(origin, normal, plane_size=2.0):
     plane_mesh.apply_transform(transformation_matrix)
 
     return plane_mesh
-
-def plot_mesh(mesh):
-    vertices = mesh.vertices
-    faces = mesh.faces
-    
-    bounding_box = mesh.bounds
-    x_min, y_min, z_min = bounding_box[0]
-    x_max, y_max, z_max = bounding_box[1]
-    
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    mesh_collection = Poly3DCollection(vertices[faces], alpha=0.1, edgecolor='k')
-
-    # Add the collection to the axis
-    ax.add_collection3d(mesh_collection)
-    
-    # Set labels
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-    
-    # Set the plot limits based on the original bounding box
-    ax.set_xlim([x_min, x_max])
-    ax.set_ylim([y_min, y_max])
-    ax.set_zlim([z_min, z_max])
-
-    # Show the plot
-    plt.show()
-    
-
-def plot_multiple_meshes(meshes):
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    
-    bounding_box = meshes[0].bounds
-    x_min, y_min, z_min = bounding_box[0]
-    x_max, y_max, z_max = bounding_box[1]
-    
-    for mesh in meshes:
-        vertices = mesh.vertices
-        faces = mesh.faces
-        mesh_collection = Poly3DCollection(vertices[faces], alpha=0.1, edgecolor='k')
-        ax.add_collection3d(mesh_collection)
-        
-        bounding_box = mesh.bounds
-        x_min = min(x_min, bounding_box[0][0])
-        y_min = min(y_min, bounding_box[0][1])
-        z_min = min(z_min, bounding_box[0][2])
-        x_max = max(x_max, bounding_box[1][0])
-        y_max = max(y_max, bounding_box[1][1])
-        z_max = max(z_max, bounding_box[1][2])
-        
-        
-    
-    # Set labels
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-
-    ax.set_xlim([x_min, x_max])
-    ax.set_ylim([y_min, y_max])
-    ax.set_zlim([z_min, z_max])
-    # Show the plot
-    plt.show()
-
