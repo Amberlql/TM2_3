@@ -5,15 +5,22 @@ import trimesh
 import matplotlib.pyplot as plt
 
 #Import modules
-from scripts.centerlinepoints import centerline
+from scripts.visualization import ObjectPlotter
+from scripts.centerlinepoints import centerline_straightcylinder
 
 #Load data
 "Here you can load all your mesh objects and provide them with a fitting name"
 tumor = trimesh.load('models/tumor.STL')
 sma = trimesh.load('models/SMA.STL')
 
-#Define constant
-resolution = 0.1 
+#Visualize case
+object_plotter = ObjectPlotter()
+object_plotter.add_object(sma)
+object_plotter.add_object(tumor)
 
-# Compute the centerline 
-centerline_points = centerline(sma, resolution)
+#Compute the centerline of the straight cylinder
+centerline_points, normal_points = centerline_straightcylinder()
+object_plotter.add_points(centerline_points, "m")
+
+#Show plot
+object_plotter.show()
