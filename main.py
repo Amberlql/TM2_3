@@ -5,7 +5,7 @@ import trimesh
 import matplotlib.pyplot as plt
 
 #Import modules
-from scripts.defineplanes import centerline
+from scripts.centerlinepoints import centerline
 
 #Load data
 "Here you can load all your mesh objects and provide them with a fitting name"
