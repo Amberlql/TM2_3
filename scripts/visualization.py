@@ -10,8 +10,11 @@ class ObjectPlotter:
     """
     
     def __init__(self):
-        self.fig = plt.figure()
-        self.ax = self.fig.add_subplot(111, projection='3d')
+        """ Initialization of plotter """
+        self.fig = plt.figure() #Create figure
+        self.ax = self.fig.add_subplot(111, projection='3d') #Add 3D subplot
+        
+        #Set bounding boxes for axis limits
         self.bounding_box = None
         self.x_min = None
         self.y_min = None
@@ -20,26 +23,39 @@ class ObjectPlotter:
         self.y_max = None
         self.z_max = None
         
-    def add_mesh(self, mesh):
+    def add_object(self, mesh):
+        """ Add mesh object """
+        #Add mesh-object to the plot
         vertices = mesh.vertices
         faces = mesh.faces
-        mesh_collection = Poly3DCollection(vertices[faces], alpha=0.1, edgecolor='k')
+        mesh_collection = Poly3DCollection(vertices[faces], alpha=0.1, edgecolor='k') #alpha = transparancy
         self.ax.add_collection3d(mesh_collection)
         
+        #Resize image to fit largest mesh-object
         bounding_box = mesh.bounds
         if self.bounding_box is None:
+            #set bounding box size
             self.bounding_box = bounding_box
             self.x_min, self.y_min, self.z_min = bounding_box[0]
             self.x_max, self.y_max, self.z_max = bounding_box[1]
         else:
-            self.x_min = min(self.x_min, bounding_box[0][0])
+            # set bounding box size
+            # self is the previous size and bounding_box is the new mesh-object size
+            self.x_min = min(self.x_min, bounding_box[0][0]) 
             self.y_min = min(self.y_min, bounding_box[0][1])
             self.z_min = min(self.z_min, bounding_box[0][2])
             self.x_max = max(self.x_max, bounding_box[1][0])
             self.y_max = max(self.y_max, bounding_box[1][1])
             self.z_max = max(self.z_max, bounding_box[1][2])
+            
+    def add_points(self, points, color):
+        """
+        Adds array of 3D points to plot
+        """
+        self.ax.scatter(*points.T, color=color)
     
     def show(self):
+        """Show plot"""
         # Set labels
         self.ax.set_xlabel('X')
         self.ax.set_ylabel('Y')
@@ -50,9 +66,6 @@ class ObjectPlotter:
         self.ax.set_zlim([self.z_min, self.z_max])
         # Show the plot
         plt.show()
-        
-    def add_points(self, points):
-        self.ax.scatter(*points.T)
         
     
 def create_plane_mesh(origin, normal, plane_size=2.0):
