@@ -15,8 +15,8 @@ sma = trimesh.load('models/SMA.STL')
 
 #Visualize case
 object_plotter = ObjectPlotter()
-object_plotter.add_object(sma)
-object_plotter.add_object(tumor)
+object_plotter.add_object(sma, "r")
+object_plotter.add_object(tumor, "y")
 
 #Compute the centerline of the straight cylinder
 centerline_points, normal_points = centerline_straightcylinder()

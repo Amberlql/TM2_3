@@ -23,12 +23,12 @@ class ObjectPlotter:
         self.y_max = None
         self.z_max = None
         
-    def add_object(self, mesh):
+    def add_object(self, mesh, color_object):
         """ Add mesh object """
         #Add mesh-object to the plot
         vertices = mesh.vertices
         faces = mesh.faces
-        mesh_collection = Poly3DCollection(vertices[faces], alpha=0.1, edgecolor='k') #alpha = transparancy
+        mesh_collection = Poly3DCollection(vertices[faces], alpha=0.3, edgecolor='k', color=color_object) #alpha = transparancy
         self.ax.add_collection3d(mesh_collection)
         
         #Resize image to fit largest mesh-object
