@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from shapely.geometry import LineString
 
-from visualization import create_plane_mesh, ObjectPlotter
+from visualization import create_plane_mesh, ObjectPlotter, ContourPlotter
 from plane_intersections import intersection_plane_with_object, intersection_points_to_2d_array, intersection_plane_with_objects
 
 
@@ -70,7 +70,7 @@ def intersection_line_with_contour(line, contour):
             line_intersection_points_list.append(point)
     
     return line_intersection_points_list
-        
+
 
 
 
@@ -89,10 +89,13 @@ def main():
     
     # get intersection points for one plane with all objects
     intersection_points = intersection_plane_with_objects(object_meshes, np.array([0,0,0]), np.array([0,1,0]))
+
     
     # filter out the intersection points for the tumor and sma and reshape them to a 2D array
     contour_points_tumor = intersection_points_to_2d_array(intersection_points["tumor"])
     contour_points_sma = intersection_points_to_2d_array(intersection_points["sma"])
+    
+    # print(contour_points_tumor)
     
     # create a LineString object for the tumor and sma so we can calculate the intersection points
     contour_tumor = LineString(contour_points_tumor)
@@ -103,15 +106,19 @@ def main():
     intersection_tumor = contour_tumor.intersection(line)
     intersection_vessel = contour_vessel.intersection(line)
     
+    contour_plotter = ContourPlotter()
+    contour_plotter.add_contour(contour_tumor, 'b')
+    contour_plotter.add_contour(contour_vessel, 'r')
+    contour_plotter.show()
     
-    plt.plot(contour_points_tumor[:,0], contour_points_tumor[:,1], 'b')
-    plt.plot(contour_points_sma[:,0], contour_points_sma[:,1], 'r')
-    plt.plot(line.xy[0], line.xy[1], 'b')
-    for point in intersection_tumor.geoms:
-        plt.plot(point.xy[0], point.xy[1], 'go')
-    # plt.plot(intersection_tumor.xy[0], intersection_tumor.xy[1], 'go')
-    plt.plot(intersection_vessel.xy[0], intersection_vessel.xy[1], 'ro')
-    plt.show()
+    # plt.plot(contour_points_tumor[:,0], contour_points_tumor[:,1], 'b')
+    # plt.plot(contour_points_sma[:,0], contour_points_sma[:,1], 'r')
+    # plt.plot(line.xy[0], line.xy[1], 'b')
+    # for point in intersection_tumor.geoms:
+    #     plt.plot(point.xy[0], point.xy[1], 'go')
+    # # plt.plot(intersection_tumor.xy[0], intersection_tumor.xy[1], 'go')
+    # plt.plot(intersection_vessel.xy[0], intersection_vessel.xy[1], 'ro')
+    # plt.show()
     
     
     
