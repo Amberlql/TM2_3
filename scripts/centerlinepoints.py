@@ -1,5 +1,4 @@
 import numpy as np
-from scipy.interpolate import splprep, splev
 
 def normal_straightcylinder(p1, p2):
     # Calculate the vector from p1 to p2
