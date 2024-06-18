@@ -1,5 +1,5 @@
+#Import packages
 import trimesh
-import numpy as np
 
 def intersection_plane_with_object(object_mesh, plane_origin, plane_normal):
     """ Create an intersection plane perpendicular on the plane_normal with plane_origin. 
