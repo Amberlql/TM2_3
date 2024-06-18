@@ -1,4 +1,5 @@
 import trimesh
+import numpy as np
 
 def intersection_plane_with_object(mesh, plane_origin, plane_normal):
     """ Create an intersection plane perpendicular on the plane_normal with plane_origin. 
@@ -34,3 +35,10 @@ def intersection_points(meshes, plane_origins, plane_normals):
         i+=1
             
     return intersection_points_per_object_per_plane
+
+
+def intersection_points_to_2d_array(intersection_points):
+    """ Convert the intersection points to a 2D array"""
+    reshaped_intersection_points = intersection_points.reshape(intersection_points.shape[0]*2, 3)
+    reshaped_intersection_points = np.delete(reshaped_intersection_points, 1, 1)
+    return reshaped_intersection_points
