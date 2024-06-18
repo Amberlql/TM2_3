@@ -10,10 +10,14 @@ from scripts.centerlinepoints import centerline_straightcylinder
 from scripts.plane_intersections import intersection_planes_with_objects
 from scripts.contour_creation import create_contour_from_intersection_points
 from scripts.line_intersections import filter_planes, line_intersections
+from scripts.features import calculate_distance, filter_distances, feature_maximum_contact_length
 
 #Initialize global parameters
+number_of_slices = 21 #Provide the number of slices, i.e. the resolution, in which you want to calculate the measumernts 
 per_degree = 3 #Degree of line segments
 example_plane = 12 #Provide as integer
+vessel_length = 30 #Provide the length of the segmented vessel in mm (to be measured in paraview)
+vessel_wall = 1.5 #Provide the largest wall thickness in mm of the CA, SMA, CHA, SM or PV
 
 #Load data and add to the dictionary object_meshes
 #Make sure you always name the tumor "tumor..."
@@ -29,7 +33,7 @@ object_plotter.add_object(sma, color="r", alpha=0.7)
 object_plotter.add_object(tumor, color="y", alpha=0.5)
 
 #NOTE: ONLY FOR EXAPLE DATA: Compute the centerline of the straight cylinder
-centerline_points, normal_points = centerline_straightcylinder()
+centerline_points, normal_points = centerline_straightcylinder(vessel_length, number_of_slices)
 object_plotter.add_points(centerline_points, color="black")
 
 #Compute intersection points with planes perpendicular to the direction of the centerline of a specific vessel
@@ -67,3 +71,13 @@ contourplotter.add_contour(lines[30], color="black", linestyle="--")
 contourplotter.add_contour(lines[60], color='black', linestyle="--")
 contourplotter.add_contour(lines[90], color='black', linestyle="--")
 contourplotter.show()
+
+#Compute distances per plane per line between the tumor and the vessel 
+all_distances = calculate_distance(all_intersections)
+
+#Filter distances to get the planes where there is at least one contact point
+all_distances_filtered = filter_distances(all_distances, vessel_wall)
+
+#Calculate the maximum contact length and provide in which planes this contact is made
+maximum_contact_length, plane_numbers_maximum_contact_length = feature_maximum_contact_length(vessel_length, number_of_slices, all_distances_filtered)
+print(f'The maximum contact length is {maximum_contact_length} and present in the following planes {plane_numbers_maximum_contact_length}')
