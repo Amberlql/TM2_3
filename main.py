@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 #Import modules
 from scripts.visualization import ObjectPlotter, create_plane_mesh
 from scripts.centerlinepoints import centerline_straightcylinder
-from scripts.intersections import intersection_points, intersection_plane_with_objects
+from scripts.plane_intersections import intersection_points
 
 #Load data
 "Here you can load all your mesh objects and provide them with a fitting name"
