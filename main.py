@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 #Import modules
 from scripts.visualization import ObjectPlotter, create_plane_mesh
 from scripts.centerlinepoints import centerline_straightcylinder
-from scripts.plane_intersections import intersection_points
+from scripts.plane_intersections import intersection_planes_with_objects
 
 ## Load data and add to the dictionary object_meshes
 tumor = trimesh.load('models/tumor.STL')
@@ -24,7 +24,7 @@ centerline_points, normal_points = centerline_straightcylinder()
 object_plotter.add_points(centerline_points, "m")
 
 ## Compute intersection points with planes perpendicular to the direction of the centerline of a specific vessel
-intersections = intersection_points(object_meshes, centerline_points, normal_points)
+intersections = intersection_planes_with_objects(object_meshes, centerline_points, normal_points)
 
 #visualize planes
 for center, normal in zip(centerline_points, normal_points):
