@@ -25,19 +25,19 @@ object_meshes = {"tumor":tumor, "SMA":sma}
 
 #Visualize object_meshes in a 3D visualization plot to get insight into the patient case
 object_plotter = ObjectPlotter()
-object_plotter.add_object(sma, "r")
-object_plotter.add_object(tumor, "y")
+object_plotter.add_object(sma, color="r", alpha=0.7)
+object_plotter.add_object(tumor, color="y", alpha=0.5)
 
 #NOTE: ONLY FOR EXAPLE DATA: Compute the centerline of the straight cylinder
 centerline_points, normal_points = centerline_straightcylinder()
-object_plotter.add_points(centerline_points, "m")
+object_plotter.add_points(centerline_points, color="black")
 
 #Compute intersection points with planes perpendicular to the direction of the centerline of a specific vessel
 intersections_with_planes = intersection_planes_with_objects(object_meshes, centerline_points, normal_points)
 
 #Visualize the example plane as mesh
-mesh = create_plane_mesh(centerline_points[example_plane], normal_points[example_plane], plane_size=8.5)
-object_plotter.add_object(mesh, "b")
+mesh = create_plane_mesh(centerline_points[example_plane], normal_points[example_plane], plane_size=13)
+object_plotter.add_object(mesh, color="b", alpha=0.3)
 object_plotter.show()
 
 #Create contour per object mesh per plane from intersection points
@@ -54,13 +54,16 @@ contourplotter = ContourPlotter()
 plane_intersection = all_intersections[f'plane{example_plane}']
 plane_contour = all_contours_filtered[f'plane{example_plane}']
 for object_mesh in plane_contour:
-    contourplotter.add_contour(plane_contour[object_mesh], "r")
+    if "tumor" in object_mesh:
+        contourplotter.add_contour(plane_contour[object_mesh], color="y", linewidth=4)
+    else:
+        contourplotter.add_contour(plane_contour[object_mesh], color="r", linewidth=4)
 for line in plane_intersection:
     for mesh in plane_intersection[line]:
-        contourplotter.add_point(plane_intersection[line][mesh], "b")
+        contourplotter.add_point(plane_intersection[line][mesh], color="b", marker="o", markersize=2)
         
 #Vizualize the lines of 90, 180, 270 degrees
-contourplotter.add_contour(lines[30], 'black')
-contourplotter.add_contour(lines[60], 'black')
-contourplotter.add_contour(lines[90], 'black')
+contourplotter.add_contour(lines[30], color="black", linestyle="--")
+contourplotter.add_contour(lines[60], color='black', linestyle="--")
+contourplotter.add_contour(lines[90], color='black', linestyle="--")
 contourplotter.show()

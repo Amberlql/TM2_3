@@ -22,12 +22,13 @@ class ObjectPlotter:
         self.y_max = None
         self.z_max = None
         
-    def add_object(self, mesh, color_object):
+        
+    def add_object(self, mesh, **kwargs):
         """ Add mesh object """
         #Add mesh-object to the plot
         vertices = mesh.vertices
         faces = mesh.faces
-        mesh_collection = Poly3DCollection(vertices[faces], alpha=0.3, edgecolor='k', color=color_object) #alpha = transparancy
+        mesh_collection = Poly3DCollection(vertices[faces], **kwargs)
         self.ax.add_collection3d(mesh_collection)
         
         #Resize image to fit largest mesh-object
@@ -47,11 +48,11 @@ class ObjectPlotter:
             self.y_max = max(self.y_max, bounding_box[1][1])
             self.z_max = max(self.z_max, bounding_box[1][2])
             
-    def add_points(self, points, color):
+    def add_points(self, points, **kwargs):
         """
         Adds array of 3D points to plot
         """
-        self.ax.scatter(*points.T, color=color)
+        self.ax.scatter(*points.T, **kwargs)
     
     def show(self):
         """Show plot"""
@@ -72,14 +73,14 @@ class ContourPlotter:
         self.fig, self.ax = plt.subplots()
         self.contours = []
         
-    def add_contour(self, contour, color):
+    def add_contour(self, contour, **kwargs):
         """Add contour to plot"""
         self.contours.append(contour)
-        self.ax.plot(contour.xy[0], contour.xy[1], color)
+        self.ax.plot(contour.xy[0], contour.xy[1], **kwargs)
     
-    def add_point(self, point, color):
+    def add_point(self, point, **kwargs):
         """Add point to plot"""
-        self.ax.plot(point.x, point.y, color, marker = 'o')
+        self.ax.plot(point.x, point.y, **kwargs)
         
     def show(self):
         """Show plot"""
