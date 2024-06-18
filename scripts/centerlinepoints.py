@@ -1,6 +1,8 @@
 import numpy as np
 
 def normal_straightcylinder(p1, p2):
+    """Compute the normal of a straight cylinder"""
+    
     # Calculate the vector from p1 to p2
     vec = p2 - p1
     
@@ -16,13 +18,14 @@ def normal_straightcylinder(p1, p2):
     
     return cylinder_normal
 
-def centerline_straightcylinder():
-    n = 21 #number of points selected on centerline
-    p1 = np.array([0, -15, 0]) #numbers known from mock data creation
-    p2 = np.array([0, 15, 0]) #numbers known from mock data creation
+def centerline_straightcylinder(vessel_length, number_of_slices):
+    """Compute the centerline of a straight cylinder"""
+    
+    p1 = np.array([0, (-(vessel_length/2)), 0]) 
+    p2 = np.array([0, (vessel_length/2), 0])
     
     #interpolate 21 points between p1 and p2 to create points on the centerline
-    centerline_points = np.stack([np.linspace(i, j, n) for i,j in zip(p1, p2)], axis=1) 
+    centerline_points = np.stack([np.linspace(i, j, number_of_slices) for i,j in zip(p1, p2)], axis=1) 
     cylinder_normal = normal_straightcylinder(p1, p2)
     normal_points = np.full(centerline_points.shape, cylinder_normal)
     return centerline_points, normal_points
