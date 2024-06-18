@@ -31,7 +31,7 @@ def intersection_planes_with_objects(object_meshes, plane_origins, plane_normals
     i=0
     for origin, normal in zip(plane_origins, plane_normals):
         intersection = intersection_plane_with_objects(object_meshes, origin, normal)
-        intersection_points_per_object_per_plane[f"plane {i}"] = intersection
+        intersection_points_per_object_per_plane[f"plane{i}"] = intersection
         i+=1
             
     return intersection_points_per_object_per_plane
