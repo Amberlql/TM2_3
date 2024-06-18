@@ -80,6 +80,11 @@ class ContourPlotter:
         print(contour.xy)
         self.ax.plot(contour.xy[0], contour.xy[1], color)
         
+    
+    def add_point(self, point, color):
+        """Add point to plot"""
+        self.ax.plot(point.x, point[1].y, color)
+        
     def show(self):
         """Show plot"""
         plt.show()
