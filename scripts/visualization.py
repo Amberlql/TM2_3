@@ -3,7 +3,6 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import numpy as np
 import trimesh
 
-
 class ObjectPlotter:
     """
     A class to plot 3D mesh objects using matplotlib.
@@ -67,7 +66,6 @@ class ObjectPlotter:
         # Show the plot
         plt.show()
         
-
 class ContourPlotter:
     """Add contours to a 2D plot to visualize them"""
     def __init__(self):
@@ -77,19 +75,16 @@ class ContourPlotter:
     def add_contour(self, contour, color):
         """Add contour to plot"""
         self.contours.append(contour)
-        print(contour.xy)
         self.ax.plot(contour.xy[0], contour.xy[1], color)
-        
     
     def add_point(self, point, color):
         """Add point to plot"""
-        self.ax.plot(point.x, point[1].y, color)
+        self.ax.plot(point.x, point.y, color, marker = 'o')
         
     def show(self):
         """Show plot"""
         plt.show()
         
-
 def create_plane_mesh(origin, normal, plane_size=2.0):
     """
     Create a plane mesh with the given origin and normal.
