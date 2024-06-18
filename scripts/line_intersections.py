@@ -15,49 +15,47 @@ def filter_planes(all_contours):
                     
     return all_contours_filtered
                     
-def one_degree_lines():
+def create_lines(vessel_contour, per_degree=1):
     "Compute lines within 360 degrees per degree starting in the centroid of the vessel"
     # Parameters
-    line_length_mm = 10  # Length of each line segment in mm, this should be enough to reach the first intersection with the vessel and tumor
-    num_lines = 360  # Number of lines (one for each degree in a 360 degree angle)
+    line_length = 10  # Length of each line segment in mm, this should be enough to reach the first intersection with the vessel and tumor
 
-    # Define the centroid of the cylinder (assuming it's at the origin)
-    centroid = np.array([0, 0, 0])
+    # Define the centroid of the vessel
+    centroid_vessel = vessel_contour.centroid 
 
-# Arrays to store the x and y coordinates of the line endpoints
-x_coords = []
-y_coords = []
+    # Arrays to store the x and y coordinates of the line endpoints
+    x_start = []
+    y_start = []
+    x_end = []
+    y_end = []
 
-# Generate lines every 1 degree around the centroid
-for angle in range(0, 360):
-    # Convert angle to radians
-    theta = np.deg2rad(angle)
+    # Generate lines every 1 degree around the centroid
+    for angle in range(0, 360, per_degree):
+        
+        # Convert angle to radians
+        theta = np.deg2rad(angle)
+        
+        # Calculate endpoint of the line segment
+        x_endpoint = line_length * np.cos(theta)
+        y_endpoint = line_length * np.sin(theta)
+        
+        # Store the coordinates
+        x_start.append(centroid_vessel.x)
+        y_start.append(centroid_vessel.y)
+        x_end.append(x_endpoint)
+        y_end.append(y_endpoint)
     
-    # Calculate endpoint of the line segment
-    x_end = line_length_mm * np.cos(theta)
-    y_end = line_length_mm * np.sin(theta)
+    #Initialize empty list for LineString objects
+    lines=[]
     
-    # Store the coordinates
-    x_coords.append(x_end)
-    y_coords.append(y_end)
-
-# Return the x and y coordinates of the line endpoints
-coordinates = np.column_stack((x_coords, y_coords))
-print(coordinates)
-
-# Optionally, plot the lines for visualization
-import matplotlib.pyplot as plt
-
-fig, ax = plt.subplots()
-ax.plot(x_coords, y_coords, 'ro')  # Plot points at the line endpoints
-for x, y in zip(x_coords, y_coords):
-    ax.plot([centroid[0], x], [centroid[1], y], 'b')  # Plot line segments
+    #Create linestring objects
+    for i in range(len(x_start)):
+        lines.append(LineString([[x_start[i], y_start[i]], [x_end[i], y_end[i]]]))
     
-    
-    
+    return lines, centroid_vessel
     
 
-def line_intersections(all_contours_filtered, object_meshes):
+def line_intersections(all_contours_filtered, per_degree):
     "Compute all intersection points per plane per line with all objects"
     
     #Initialize dictonary per plane
@@ -65,19 +63,49 @@ def line_intersections(all_contours_filtered, object_meshes):
 
     for plane in all_contours_filtered:
         
-        #Initialize dictionary per object_mesh
-        intersection_per_object_mesh = {}
+        #Compute lines for the vessel
+        lines = []
+        centroid_vessel = None
+        for object_mesh in all_contours_filtered[plane]:
+            if not 'tumor' in object_mesh:
+                lines, centroid_vessel = create_lines(all_contours_filtered[plane][object_mesh], per_degree=per_degree)
         
-        for object_mesh in object_meshes:
-                
-            #Compute the intersections for every object mesh for every plane with a line
-            intersection_points = all_contours_filtered[plane][object_mesh](line)
+        #Initialize dictionary per line
+        intersection_per_line = {}
+        
+        #Compute the intersection points for every line for every object mesh in every plane 
+        for i, line in enumerate(lines):
             
+            #Initialize dictionary per object
+            intersection_per_object_mesh = {}
+            
+            for object_mesh in all_contours_filtered[plane]:
+                
+                #Compute the intersections for every object mesh for every plane with a line
+                line_intersection = line.intersection(all_contours_filtered[plane][object_mesh])
+                
+                if line_intersection.geom_type == 'Point':
+                    
+                    #Add to dictionary
+                    intersection_per_object_mesh[object_mesh] = line_intersection
+                    
+                elif line_intersection.geom_type == 'MultiPoint':
+                    point_1 = line_intersection.geoms[0]
+                    point_2 = line_intersection.geoms[1]
+                    distance_point_1 = centroid_vessel.distance(point_1)
+                    distance_point_2 = centroid_vessel.distance(point_2)
+                    
+                    if distance_point_1 > distance_point_2: #only the closest point with the vessel matters
+                        #Add to dictionary
+                        intersection_per_object_mesh[object_mesh] = point_2 
+                    else:
+                        intersection_per_object_mesh[object_mesh] = point_1
+                        
             #Add to dictionary
-            intersection_per_object_mesh[object_mesh] = intersection_points
-        
+            intersection_per_line[f'line{i}'] = intersection_per_object_mesh
+            
         #Add to main dictionary 
-        all_intersections[plane] = intersection_per_object_mesh
+        all_intersections[plane] = intersection_per_line
         
-    return all_intersections
+    return all_intersections, lines
     
