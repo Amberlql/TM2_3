@@ -7,7 +7,7 @@ from tabulate import tabulate
 
 #Import modules
 from scripts.visualization import ObjectPlotter, create_plane_mesh, ContourPlotter, TablePlotter
-from scripts.centerline_points import centerline_straightcylinder
+from scripts.centerline_points import centerline_straightcylinder, centerline_case_3
 from scripts.plane_intersections import intersection_planes_with_objects
 from scripts.contour_creation import create_contour_from_intersection_points
 from scripts.line_intersections import filter_planes, line_intersections
@@ -33,19 +33,20 @@ vessel_wall = 1.5 #Provide the largest wall thickness in mm of the CA, SMA, CHA,
 
 #Case 2: high resolution, straight cylinder, rounded tumor, slightly less angle then 180 degrees
 # tumor = trimesh.load('models/case2_tumor.STL')
-tumor = trimesh.load('models/case2_tumor.STL')
-sma = trimesh.load('models/case2_SMA.STL')
+tumor = trimesh.load('models/case3_tumor.STL')
+sma = trimesh.load('models/case3_SMA.STL')
 object_meshes = {"tumor":tumor, "SMA":sma}
 
 #Case 3: low resolution, curved cylinder
 
 #Visualize object_meshes in a 3D visualization plot to get insight into the patient case
 object_plotter = ObjectPlotter()
-object_plotter.add_object(sma, label="SMA", color="r", alpha=0.7)
-object_plotter.add_object(tumor, label="tumor", color="y", alpha=0.5)
+object_plotter.add_object(sma, label="SMA", color="r", alpha=0.2)
+object_plotter.add_object(tumor, label="tumor", color="y", alpha=0.2)
 
 #NOTE: ONLY CASE 1 & 2: Compute the centerline of the straight cylinder
-centerline_points, normal_points = centerline_straightcylinder(vessel_length, slice_thickness)
+centerline_points, normal_points = centerline_case_3()
+
 object_plotter.add_points(centerline_points, color="black")
 
 #Compute intersection points with planes perpendicular to the direction of the centerline of a specific vessel
@@ -54,6 +55,9 @@ intersections_with_planes = intersection_planes_with_objects(object_meshes, cent
 #Add the example plane as mesh to the visualization
 mesh = create_plane_mesh(centerline_points[example_plane], normal_points[example_plane], plane_size=13)
 object_plotter.add_object(mesh, label="plane", color="b", alpha=0.3)
+
+object_plotter.set_settings("Visualizations of the mock-case with the 3D tumor and vessel mesh including an example 2D slice plane")
+plt.show()
 
 #Create contour per object mesh per plane from intersection points
 all_contours = create_contour_from_intersection_points(intersections_with_planes, object_meshes, centerline_points, normal_points)
