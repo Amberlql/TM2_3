@@ -10,13 +10,15 @@ from scripts.centerlinepoints import centerline_straightcylinder
 from scripts.plane_intersections import intersection_planes_with_objects
 from scripts.contour_creation import create_contour_from_intersection_points
 from scripts.line_intersections import filter_planes, line_intersections
-from scripts.features import calculate_distance, filter_distances, feature_maximum_contact_length
+from scripts.features import calculate_distance, filter_distances, feature_maximum_contact_length, feature_angles
 
 #Initialize global parameters
 number_of_slices = 21 #Provide the number of slices, i.e. the resolution, in which you want to calculate the measumernts 
-per_degree = 3 #Degree of line segments
-example_plane = 12 #Provide as integer
 vessel_length = 30 #Provide the length of the segmented vessel in mm (to be measured in paraview)
+
+per_degree = 2 #Degree of line segments
+minimum_degrees = 10 #Provide a treshold of the minimum value of degrees between the vessel and the tumor that you are interested in
+example_plane = 12 #Provide as integer
 vessel_wall = 1.5 #Provide the largest wall thickness in mm of the CA, SMA, CHA, SM or PV
 
 #Load data and add to the dictionary object_meshes
@@ -67,9 +69,9 @@ for line in plane_intersection:
         contourplotter.add_point(plane_intersection[line][mesh], color="b", marker="o", markersize=2)
         
 #Vizualize the lines of 90, 180, 270 degrees
-contourplotter.add_contour(lines[30], color="black", linestyle="--")
-contourplotter.add_contour(lines[60], color='black', linestyle="--")
-contourplotter.add_contour(lines[90], color='black', linestyle="--")
+contourplotter.add_contour(lines[(int(90 / per_degree))], color="black", linestyle="--")
+contourplotter.add_contour(lines[(int(180 / per_degree))], color='black', linestyle="--")
+contourplotter.add_contour(lines[(int(270 / per_degree))], color='black', linestyle="--")
 contourplotter.show()
 
 #Compute distances per plane per line between the tumor and the vessel 
@@ -81,3 +83,7 @@ all_distances_filtered = filter_distances(all_distances, vessel_wall)
 #Calculate the maximum contact length and provide in which planes this contact is made
 maximum_contact_length, plane_numbers_maximum_contact_length = feature_maximum_contact_length(vessel_length, number_of_slices, all_distances_filtered)
 print(f'The maximum contact length is {maximum_contact_length} and present in the following planes {plane_numbers_maximum_contact_length}')
+
+#Calculate the angle of encasement of the tumor around the vessel
+all_angles = feature_angles(all_distances_filtered, per_degree, minimum_degrees)
+print(all_angles)

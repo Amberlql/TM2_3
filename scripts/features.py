@@ -91,4 +91,44 @@ def feature_maximum_contact_length(vessel_length, number_of_slices, all_distance
     maximum_contact_length = longest_streak * slice_thickness
 
     return maximum_contact_length, plane_numbers_longest_streak
+
+def feature_angles(all_distances_filtered, per_degree, minimum_degrees):
+    """Calculate the maximum angle for a given plane and safe the lines between which this angle is created"""
     
+    #Initialize dictionary
+    all_angles = {}
+     
+    for plane in all_distances_filtered:
+        
+        #Initialize dictionary and list to registrate per angle
+        angle_dict = {}
+        line_list = []
+        
+        #Initialize angle
+        angle_degree = 0
+        
+        for line in all_distances_filtered[plane]:
+            
+            #Check if the distance between the tumor and the vessel is close enough to contribute to the angle
+            if all_distances_filtered[plane][line] < np.inf:
+                
+                #If close enough, add that line to the total angle
+                angle_degree += per_degree
+                print(angle_degree)
+                line_list.append(line)
+                
+            #If not close enough, close angle and check if it is larger than the set minimum degrees of interest
+            else:
+                if angle_degree < minimum_degrees:
+                    angle_degree = 0
+                    line_list = []
+                
+                #If larger than the st of minimum degrees of interest, safe in dictionary
+                else:
+                    angle_dict[f'Angle:{angle_degree - per_degree}'] = [line_list[0], line_list[-1]]
+                    angle_degree = 0
+                    line_list = []
+                    
+        all_angles[plane] = angle_dict
+                
+    return all_angles
