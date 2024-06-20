@@ -8,20 +8,18 @@ class ObjectPlotter:
     A class to plot 3D mesh objects using matplotlib.
     """
     
-    def __init__(self):
+    def __init__(self, title):
         """ Initialization of plotter """
         self.fig = plt.figure() #Create figure
         self.ax = self.fig.add_subplot(111, projection='3d') #Add 3D subplot
         
-        #Set bounding boxes for axis limits
-        self.bounding_box = None
-        self.x_min = None
-        self.y_min = None
-        self.z_min = None
-        self.x_max = None
-        self.y_max = None
-        self.z_max = None
+        # Set labels
+        self.ax.set_xlabel('X')
+        self.ax.set_ylabel('Y')
+        self.ax.set_zlabel('Z')
         
+        #Set title
+        self.ax.set_title(title)
         
     def add_object(self, mesh, **kwargs):
         """ Add mesh object """
@@ -30,48 +28,34 @@ class ObjectPlotter:
         faces = mesh.faces
         mesh_collection = Poly3DCollection(vertices[faces], **kwargs)
         self.ax.add_collection3d(mesh_collection)
-        
-        #Resize image to fit largest mesh-object
-        bounding_box = mesh.bounds
-        if self.bounding_box is None:
-            #set bounding box size
-            self.bounding_box = bounding_box
-            self.x_min, self.y_min, self.z_min = bounding_box[0]
-            self.x_max, self.y_max, self.z_max = bounding_box[1]
-        else:
-            # set bounding box size
-            # self is the previous size and bounding_box is the new mesh-object size
-            self.x_min = min(self.x_min, bounding_box[0][0]) 
-            self.y_min = min(self.y_min, bounding_box[0][1])
-            self.z_min = min(self.z_min, bounding_box[0][2])
-            self.x_max = max(self.x_max, bounding_box[1][0])
-            self.y_max = max(self.y_max, bounding_box[1][1])
-            self.z_max = max(self.z_max, bounding_box[1][2])
             
+         # Scale axis equal
+        self.ax.axis("equal")
+        
     def add_points(self, points, **kwargs):
         """
         Adds array of 3D points to plot
         """
         self.ax.scatter(*points.T, **kwargs)
+        
+        # Scale axis equal
+        self.ax.axis("equal")
     
-    def show(self):
-        """Show plot"""
+class ContourPlotter:
+    """Add contours to a 2D plot to visualize them"""
+    def __init__(self, title):
+        self.fig, self.ax = plt.subplots()
+        self.contours = []
+        
+        # Scale axis equal
+        self.ax.axis("equal")
+        
         # Set labels
         self.ax.set_xlabel('X')
         self.ax.set_ylabel('Y')
-        self.ax.set_zlabel('Z')
-
-        self.ax.set_xlim([self.x_min, self.x_max])
-        self.ax.set_ylim([self.y_min, self.y_max])
-        self.ax.set_zlim([self.z_min, self.z_max])
-        # Show the plot
-        plt.show()
         
-class ContourPlotter:
-    """Add contours to a 2D plot to visualize them"""
-    def __init__(self):
-        self.fig, self.ax = plt.subplots()
-        self.contours = []
+        #Set title
+        self.ax.set_title(title)
         
     def add_contour(self, contour, **kwargs):
         """Add contour to plot"""
@@ -81,10 +65,6 @@ class ContourPlotter:
     def add_point(self, point, **kwargs):
         """Add point to plot"""
         self.ax.plot(point.x, point.y, **kwargs)
-        
-    def show(self):
-        """Show plot"""
-        plt.show()
         
 def create_plane_mesh(origin, normal, plane_size=2.0):
     """
