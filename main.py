@@ -25,17 +25,21 @@ vessel_wall = 1.5 #Provide the largest wall thickness in mm of the CA, SMA, CHA,
 #Make sure you give the vessels the name of the corresponding vessel
 #DO NOT inmport any other structures then the vessels and the tumor
 
-#Case 1: Low resolution, straight cylinder
-tumor = trimesh.load('models/tumor.STL')
-sma = trimesh.load('models/SMA.STL')
-object_meshes = {"tumor":tumor, "SMA":sma}
+# #Case 1: Low resolution, straight cylinder
+# tumor = trimesh.load('models/case1_tumor.STL')
+# sma = trimesh.load('models/case1_SMA.STL')
+# object_meshes = {"tumor":tumor, "SMA":sma}
 
-#Case 2: high resolution, straight cylinder
+#Case 2: high resolution, straight cylinder, rounded tumor
+tumor = trimesh.load('models/case2_tumor.STL')
+sma = trimesh.load('models/case2_SMA.STL')
+object_meshes = {"tumor":tumor, "SMA":sma}
 
 #Case 3: low resolution, curved cylinder
 
 #Visualize object_meshes in a 3D visualization plot to get insight into the patient case
-object_plotter = ObjectPlotter()
+title = "Visualizations of the mock-case with the 3D tumor and vessel mesh including an example 2D slice plane" #Set title for the figure
+object_plotter = ObjectPlotter(title)
 object_plotter.add_object(sma, color="r", alpha=0.7)
 object_plotter.add_object(tumor, color="y", alpha=0.5)
 
@@ -46,13 +50,12 @@ object_plotter.add_points(centerline_points, color="black")
 #Compute intersection points with planes perpendicular to the direction of the centerline of a specific vessel
 intersections_with_planes = intersection_planes_with_objects(object_meshes, centerline_points, normal_points)
 
-#Visualize the example plane as mesh
+#Add the example plane as mesh to the visualization
 mesh = create_plane_mesh(centerline_points[example_plane], normal_points[example_plane], plane_size=13)
 object_plotter.add_object(mesh, color="b", alpha=0.3)
-object_plotter.show()
 
 #Create contour per object mesh per plane from intersection points
-all_contours = create_contour_from_intersection_points(intersections_with_planes, object_meshes)
+all_contours = create_contour_from_intersection_points(intersections_with_planes, object_meshes, centerline_points, normal_points)
 
 #Filter contours to only achieve the planes in which the tumor is present
 all_contours_filtered = filter_planes(all_contours)
@@ -61,7 +64,8 @@ all_contours_filtered = filter_planes(all_contours)
 all_intersections, lines = line_intersections(all_contours_filtered, per_degree)
 
 #Visualize intersection points for every line for every object a plane as example
-contourplotter = ContourPlotter()
+title = "Visualization of a 2D cross-sectional plane with and intersection points with all lines" #Set title of figure
+contourplotter = ContourPlotter(title)
 plane_intersection = all_intersections[f'plane{example_plane}']
 plane_contour = all_contours_filtered[f'plane{example_plane}']
 for object_mesh in plane_contour:
@@ -72,13 +76,7 @@ for object_mesh in plane_contour:
 for line in plane_intersection:
     for mesh in plane_intersection[line]:
         contourplotter.add_point(plane_intersection[line][mesh], color="b", marker="o", markersize=2)
-        
-#Vizualize the lines of 90, 180, 270 degrees
-contourplotter.add_contour(lines[(int(90 / per_degree))], color="black", linestyle="--")
-contourplotter.add_contour(lines[(int(180 / per_degree))], color='black', linestyle="--")
-contourplotter.add_contour(lines[(int(270 / per_degree))], color='black', linestyle="--")
-contourplotter.show()
-
+    
 #Compute distances per plane per line between the tumor and the vessel 
 all_distances = calculate_distance(all_intersections)
 
@@ -92,3 +90,6 @@ print(f'The maximum contact length is {maximum_contact_length} and present in th
 #Calculate the angle of encasement of the tumor around the vessel
 all_angles = feature_angles(all_distances_filtered, per_degree, minimum_degrees)
 print(all_angles)
+
+#Show all figures
+plt.show()
