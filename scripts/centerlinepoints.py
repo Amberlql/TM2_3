@@ -18,14 +18,15 @@ def normal_straightcylinder(p1, p2):
     
     return cylinder_normal
 
-def centerline_straightcylinder(vessel_length, number_of_slices):
+def centerline_straightcylinder(vessel_length, slice_thickness):
     """Compute the centerline of a straight cylinder"""
     
     p1 = np.array([0, (-(vessel_length/2)), 0]) 
     p2 = np.array([0, (vessel_length/2), 0])
+    number_of_steps = vessel_length / slice_thickness
     
-    #interpolate 21 points between p1 and p2 to create points on the centerline
-    centerline_points = np.stack([np.linspace(i, j, number_of_slices) for i,j in zip(p1, p2)], axis=1) 
+    #interpolate between p1 and p2 to create points on the centerline
+    centerline_points = np.stack([np.linspace(i, j, int(number_of_steps)) for i,j in zip(p1, p2)], axis=1) 
     cylinder_normal = normal_straightcylinder(p1, p2)
     normal_points = np.full(centerline_points.shape, cylinder_normal)
     return centerline_points, normal_points

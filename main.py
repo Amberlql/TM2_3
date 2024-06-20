@@ -13,10 +13,9 @@ from scripts.line_intersections import filter_planes, line_intersections
 from scripts.features import calculate_distance, filter_distances, feature_maximum_contact_length, feature_angles
 
 #Initialize global parameters
-number_of_slices = 21 #Provide the number of slices, i.e. the resolution, in which you want to calculate the measumernts 
 vessel_length = 30 #Provide the length of the segmented vessel in mm (to be measured in paraview)
-
-per_degree = 2 #Degree of line segments
+slice_thickness = 1.5 #IMPORTANT! The slice thickness needs to be a integer divisor of the vessel length and provided in mm
+per_degree = 3 #Degree of line segments
 minimum_degrees = 10 #Provide a treshold of the minimum value of degrees between the vessel and the tumor that you are interested in
 example_plane = 12 #Provide as integer
 vessel_wall = 1.5 #Provide the largest wall thickness in mm of the CA, SMA, CHA, SM or PV
@@ -25,17 +24,23 @@ vessel_wall = 1.5 #Provide the largest wall thickness in mm of the CA, SMA, CHA,
 #Make sure you always name the tumor "tumor..."
 #Make sure you give the vessels the name of the corresponding vessel
 #DO NOT inmport any other structures then the vessels and the tumor
+
+#Case 1: Low resolution, straight cylinder
 tumor = trimesh.load('models/tumor.STL')
 sma = trimesh.load('models/SMA.STL')
 object_meshes = {"tumor":tumor, "SMA":sma}
+
+#Case 2: high resolution, straight cylinder
+
+#Case 3: low resolution, curved cylinder
 
 #Visualize object_meshes in a 3D visualization plot to get insight into the patient case
 object_plotter = ObjectPlotter()
 object_plotter.add_object(sma, color="r", alpha=0.7)
 object_plotter.add_object(tumor, color="y", alpha=0.5)
 
-#NOTE: ONLY FOR EXAPLE DATA: Compute the centerline of the straight cylinder
-centerline_points, normal_points = centerline_straightcylinder(vessel_length, number_of_slices)
+#NOTE: ONLY CASE 1 & 2: Compute the centerline of the straight cylinder
+centerline_points, normal_points = centerline_straightcylinder(vessel_length, slice_thickness)
 object_plotter.add_points(centerline_points, color="black")
 
 #Compute intersection points with planes perpendicular to the direction of the centerline of a specific vessel
@@ -81,7 +86,7 @@ all_distances = calculate_distance(all_intersections)
 all_distances_filtered = filter_distances(all_distances, vessel_wall)
 
 #Calculate the maximum contact length and provide in which planes this contact is made
-maximum_contact_length, plane_numbers_maximum_contact_length = feature_maximum_contact_length(vessel_length, number_of_slices, all_distances_filtered)
+maximum_contact_length, plane_numbers_maximum_contact_length = feature_maximum_contact_length(all_distances_filtered, slice_thickness)
 print(f'The maximum contact length is {maximum_contact_length} and present in the following planes {plane_numbers_maximum_contact_length}')
 
 #Calculate the angle of encasement of the tumor around the vessel
