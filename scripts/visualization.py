@@ -8,18 +8,10 @@ class ObjectPlotter:
     A class to plot 3D mesh objects using matplotlib.
     """
     
-    def __init__(self, title):
+    def __init__(self):
         """ Initialization of plotter """
         self.fig = plt.figure() #Create figure
         self.ax = self.fig.add_subplot(111, projection='3d') #Add 3D subplot
-        
-        # Set labels
-        self.ax.set_xlabel('X')
-        self.ax.set_ylabel('Y')
-        self.ax.set_zlabel('Z')
-        
-        #Set title
-        self.ax.set_title(title)
         
     def add_object(self, mesh, **kwargs):
         """ Add mesh object """
@@ -28,9 +20,6 @@ class ObjectPlotter:
         faces = mesh.faces
         mesh_collection = Poly3DCollection(vertices[faces], **kwargs)
         self.ax.add_collection3d(mesh_collection)
-            
-         # Scale axis equal
-        self.ax.axis("equal")
         
     def add_points(self, points, **kwargs):
         """
@@ -38,24 +27,27 @@ class ObjectPlotter:
         """
         self.ax.scatter(*points.T, **kwargs)
         
-        # Scale axis equal
-        self.ax.axis("equal")
-    
-class ContourPlotter:
-    """Add contours to a 2D plot to visualize them"""
-    def __init__(self, title):
-        self.fig, self.ax = plt.subplots()
-        self.contours = []
-        
-        # Scale axis equal
-        self.ax.axis("equal")
+    def set_settings(self, title):
+        """Set settings of the plot"""
+        # Set title
+        self.ax.set_title(title)
         
         # Set labels
         self.ax.set_xlabel('X')
         self.ax.set_ylabel('Y')
+        self.ax.set_zlabel('Z')
         
-        #Set title
-        self.ax.set_title(title)
+         # Scale axis equal
+        self.ax.axis("equal")
+        
+        # Add legend
+        self.ax.legend()
+    
+class ContourPlotter:
+    """Add contours to a 2D plot to visualize them"""
+    def __init__(self):
+        self.fig, self.ax = plt.subplots()
+        self.contours = []
         
     def add_contour(self, contour, **kwargs):
         """Add contour to plot"""
@@ -65,6 +57,41 @@ class ContourPlotter:
     def add_point(self, point, **kwargs):
         """Add point to plot"""
         self.ax.plot(point.x, point.y, **kwargs)
+        
+    def set_settings(self, title):
+        """Set settings of the plot"""
+        # Set title
+        self.ax.set_title(title)
+
+        # Set labels
+        self.ax.set_xlabel('X')
+        self.ax.set_ylabel('Y')
+
+        # Scale axis equal
+        self.ax.axis("equal")
+
+        # Add legend
+        self.ax.legend()
+        
+class TablePlotter:
+    """Creates a table from a dictionary"""
+    def __init__(self):
+        self.fig, self.ax = plt.subplots()
+        
+        #Hide axes
+        self.ax.xaxis.set_visible(False)
+        self.ax.yaxis.set_visible(False)
+        self.ax.set_frame_on(False)
+
+    def create_table(self, rows, columns):
+        # Create the table
+        table = self.ax.table(cellText=list(rows), colLabels=columns, loc='center', cellLoc='center')
+        
+        #Set settings
+        table.auto_set_font_size(False)
+        table.set_fontsize(14)
+        table.scale(1.2, 1.2)
+
         
 def create_plane_mesh(origin, normal, plane_size=2.0):
     """
