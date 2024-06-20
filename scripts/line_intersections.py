@@ -37,8 +37,8 @@ def create_lines(per_degree):
         y_endpoint = line_length * np.sin(theta)
         
         # Store the coordinates
-        x_start.append(0)
-        y_start.append(0)
+        x_start.append(0) #Since the centroid is always in at 0,0 due to the defenition of the planes coordinate system
+        y_start.append(0) #Since the centroid is always in at 0,0 due to the defenition of the planes coordinate system
         x_end.append(x_endpoint)
         y_end.append(y_endpoint)
     
@@ -62,7 +62,7 @@ def line_intersections(all_contours_filtered, per_degree):
         
         #Compute lines for the vessel
         lines = []
-        centroid_vessel = Point(0, 0)
+        centroid_vessel = Point(0, 0) #Since the centroid is always in at 0,0 due to the defenition of the planes coordinate system
         for object_mesh in all_contours_filtered[plane]:
             if not 'tumor' in object_mesh:
                 lines = create_lines(per_degree)
