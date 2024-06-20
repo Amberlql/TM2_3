@@ -3,10 +3,11 @@
 import numpy as np
 import trimesh
 import matplotlib.pyplot as plt
+from tabulate import tabulate
 
 #Import modules
 from scripts.visualization import ObjectPlotter, create_plane_mesh, ContourPlotter, TablePlotter
-from scripts.centerlinepoints import centerline_straightcylinder
+from scripts.centerline_points import centerline_straightcylinder
 from scripts.plane_intersections import intersection_planes_with_objects
 from scripts.contour_creation import create_contour_from_intersection_points
 from scripts.line_intersections import filter_planes, line_intersections
@@ -30,9 +31,9 @@ vessel_wall = 1.5 #Provide the largest wall thickness in mm of the CA, SMA, CHA,
 # sma = trimesh.load('models/case1_SMA.STL')
 # object_meshes = {"tumor":tumor, "SMA":sma}
 
-#Case 2: high resolution, straight cylinder, rounded tumor
+#Case 2: high resolution, straight cylinder, rounded tumor, slightly less angle then 180 degrees
 # tumor = trimesh.load('models/case2_tumor.STL')
-tumor = trimesh.load('models/slightly_less_angled_tumor_high_res.STL')
+tumor = trimesh.load('models/case2_tumor.STL')
 sma = trimesh.load('models/case2_SMA.STL')
 object_meshes = {"tumor":tumor, "SMA":sma}
 
@@ -69,9 +70,21 @@ plane_intersection = all_intersections[f'plane{example_plane}']
 plane_contour = all_contours_filtered[f'plane{example_plane}']
 for object_mesh in plane_contour:
     if "tumor" in object_mesh:
-        contour_plotter.add_contour(plane_contour[object_mesh], label="tumor", color="y", linewidth=4)
+        count = 0 #in order to only add the label once to the legend
+        for line in plane_contour[object_mesh].geoms:
+            if count == 0:
+                contour_plotter.add_contour(line, label="tumor", color="y", linewidth=4)
+                count += 1
+            else:
+                contour_plotter.add_contour(line, color="y", linewidth=4)
     else:
-        contour_plotter.add_contour(plane_contour[object_mesh], label=(f'{object_mesh}'), color="r", linewidth=4)
+        count == 0 #in order to only add the label once to the legend
+        for line in plane_contour[object_mesh].geoms:
+            if count == 0:
+                contour_plotter.add_contour(line, label=(f'{object_mesh}'), color="r", linewidth=4)
+                count += 1
+            else:
+                contour_plotter.add_contour(line, color="r", linewidth=4)
 for line in plane_intersection:
     count = 0 #in order to only add one point to the legend
     for mesh in plane_intersection[line]:
@@ -94,15 +107,32 @@ print(f'The maximum contact length is {maximum_contact_length} and present in th
 #Calculate the angle of encasement of the tumor around the vessel
 all_angles = feature_angles(all_distances_filtered, per_degree, minimum_degrees)
 
+#Print angles per plane
+for plane in all_angles:
+    for angle in all_angles[plane]:
+        print(f'An angle of encasement for {plane} is {angle.replace("_", " ")}')
+
 #Visualize planes with given angle
 for plane in all_angles:
     contour_plotter2 = ContourPlotter()
     contour = all_contours_filtered[plane]
     for object_mesh in plane_contour:
         if "tumor" in object_mesh:
-            contour_plotter2.add_contour(plane_contour[object_mesh], label="tumor", color="y", linewidth=4)
+            count = 0 #in order to only add the label once to the legend
+            for line in plane_contour[object_mesh].geoms:
+                if count == 0:
+                    contour_plotter2.add_contour(line, label="tumor", color="y", linewidth=4)
+                    count += 1
+                else:
+                    contour_plotter2.add_contour(line, color="y", linewidth=4)
         else:
-            contour_plotter2.add_contour(plane_contour[object_mesh], label=(f'{object_mesh}'), color="r", linewidth=4)
+            count = 0 #in order to only add the label once to the legend
+            for line in plane_contour[object_mesh].geoms:
+                if count == 0:
+                    contour_plotter2.add_contour(line, label=(f'{object_mesh}'), color="r", linewidth=4)
+                    count += 1
+                else:
+                    contour_plotter2.add_contour(line, color="r", linewidth=4)
     for angle in all_angles[plane]:
         first_line_number = all_angles[plane][angle][0]
         first_line_number = int(first_line_number[4:])
@@ -113,11 +143,9 @@ for plane in all_angles:
         title = f'{angle.replace("_", " ")} for {plane}' #Set title for the figure
         contour_plotter2.set_settings(title)
 
-#Visualize angles in table
-columns = list(all_angles.keys())
-rows = zip(*all_angles.values())
-table_plotter = TablePlotter()
-table_plotter.create_table(rows, columns)
+# #Visualize angles in table
+# table_plotter = TablePlotter()
+# table_plotter.create_table(rows, columns)
 
 #Show all figures
 title = "Visualizations of the mock-case with the 3D tumor and vessel mesh including an example 2D slice plane" #Set title for the figure
