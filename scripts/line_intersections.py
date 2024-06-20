@@ -1,6 +1,6 @@
 #Import packages
 import numpy as np
-from shapely.geometry import LineString 
+from shapely.geometry import LineString, Point
 
 def filter_planes(all_contours):
     """Filter out all planes that have no tumor contact"""
@@ -15,13 +15,10 @@ def filter_planes(all_contours):
                     
     return all_contours_filtered
                     
-def create_lines(vessel_contour, per_degree=1):
+def create_lines(per_degree):
     "Compute lines within 360 degrees per degree starting in the centroid of the vessel"
     # Parameters
     line_length = 10  # Length of each line segment in mm, this should be enough to reach the first intersection with the vessel and tumor
-
-    # Define the centroid of the vessel
-    centroid_vessel = vessel_contour.centroid 
 
     # Arrays to store the x and y coordinates of the line endpoints
     x_start = []
@@ -40,8 +37,8 @@ def create_lines(vessel_contour, per_degree=1):
         y_endpoint = line_length * np.sin(theta)
         
         # Store the coordinates
-        x_start.append(centroid_vessel.x)
-        y_start.append(centroid_vessel.y)
+        x_start.append(0)
+        y_start.append(0)
         x_end.append(x_endpoint)
         y_end.append(y_endpoint)
     
@@ -52,7 +49,7 @@ def create_lines(vessel_contour, per_degree=1):
     for i in range(len(x_start)):
         lines.append(LineString([[x_start[i], y_start[i]], [x_end[i], y_end[i]]]))
     
-    return lines, centroid_vessel
+    return lines
     
 
 def line_intersections(all_contours_filtered, per_degree):
@@ -65,10 +62,10 @@ def line_intersections(all_contours_filtered, per_degree):
         
         #Compute lines for the vessel
         lines = []
-        centroid_vessel = None
+        centroid_vessel = Point(0, 0)
         for object_mesh in all_contours_filtered[plane]:
             if not 'tumor' in object_mesh:
-                lines, centroid_vessel = create_lines(all_contours_filtered[plane][object_mesh], per_degree=per_degree)
+                lines = create_lines(per_degree)
         
         #Initialize dictionary per line
         intersection_per_line = {}

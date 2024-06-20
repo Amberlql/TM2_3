@@ -9,8 +9,8 @@ from contour_creation import intersection_points_to_2d_array
 
 
 def test_load():
-    tumor = trimesh.load('models/tumor.stl')
-    sma = trimesh.load('models/SMA.stl')
+    tumor = trimesh.load('models/case1_tumor.stl')
+    sma = trimesh.load('models/case1_SMA.stl')
     return tumor, sma
 
 
@@ -189,17 +189,12 @@ def intersection_points_to_2d_array(intersection_points, normal, origin):
     return transformed_points
     
 
-
 def main():
-    test = "plane10"
-    
-    print(int(test.split("plane")[1]))
-    
     tumor_mesh, sma_mesh = test_load()
     # Add your code here to perform operations on tumor and sma objects
     
-    normal = np.array([1,1,0])
-    origin = np.array([1,1,1])
+    normal = np.array([1,1,1])
+    origin = np.array([0,0,0])
 
     plane_test = Plane(origin, normal)
     plane_mesh = plane_test.get_mesh(plane_size=20.0)
@@ -246,10 +241,19 @@ def main():
     
     # plot the points
     fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    ax = fig.add_subplot(111, projection='3d')    
+    ax.quiver(*origin, *B1, color='r')
+    ax.quiver(*origin, *B2, color='g')
+    ax.quiver(*origin, *normal, color='b')
+    
+    # add original coordinate system
+    ax.quiver(0,0,0,1,0,0, color='r')
+    ax.quiver(0,0,0,0,1,0, color='g')
+    ax.quiver(0,0,0,0,0,1, color='b')
+    
     ax.scatter(*reshaped_intersection_points.T, marker='o', color='r')
-    ax.scatter(*transformed_points.T)
-    ax.scatter(*transformed_points_back.T)
+    ax.scatter(*transformed_points.T, marker='o', color='g')
+    ax.scatter(*transformed_points_back.T, marker='o', color='b')
     plt.show()
     
     # print(reshaped_intersection_points[:5, :])

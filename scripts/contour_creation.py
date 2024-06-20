@@ -1,9 +1,8 @@
 # Import packages
 import numpy as np
-from shapely.geometry import LineString
+from shapely.geometry import LineString, MultiLineString
 
 def get_coordinate_frame_from_normal_and_points(normal, origin, points):
-    """Create a coordinate system from a normal vector of the plane with the given origen and points"""
     normal = normal / np.linalg.norm(normal)
     
     # Choose an arbitrary vector that is not parallel to the normal
@@ -44,7 +43,6 @@ def create_transformation_matrix(B1, B2, normal, origin):
 
 
 def transform_points_to_new_coordinate_system(points, T):
-    """Transform points to new created coordinate system"""
     points_ones = np.hstack([points, np.ones((points.shape[0], 1))])
     new_points = np.dot(T, points_ones.T).T
     
@@ -97,9 +95,14 @@ def create_contour_from_intersection_points(intersections_with_planes, object_me
             #Filter out the intersection points for the tumor and sma and reshape them to a 2D array
             contour_points = intersection_points_to_2d_array(intersections_with_planes[plane][object_mesh], normal, origin)
             
-            #Create a LineString object for the object_mesh so you can calculate the intersection points
-            contour = LineString(contour_points)
+            contour = MultiLineString([])
             
+            if contour_points.shape[0] == 0:
+                contours_per_object_mesh[object_mesh] = contour
+                continue
+
+            for i in range(0, contour_points.shape[0], 2):
+                contour = contour.union(LineString([contour_points[i], contour_points[i+1]]))
             #Add to dictionary
             contours_per_object_mesh[object_mesh] = contour
         
