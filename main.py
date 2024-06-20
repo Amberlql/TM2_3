@@ -25,7 +25,7 @@ number_of_slices =  21 #Defines the resolution
 per_degree = 3 #Degree of line segments
 minimum_degrees = 10 #Provide a treshold of the minimum value of degrees between the vessel and the tumor that you are interested in
 example_plane = 12 #Provide as integer
-vessel_wall = 1.5 #Provide the largest wall thickness in mm of the CA, SMA, CHA, SM or PV
+vessel_wall = 3 #Provide the largest wall thickness in mm of the CA, SMA, CHA, SM or PV
 
 # ============================================================
 # Load data
@@ -41,9 +41,7 @@ vessel_wall = 1.5 #Provide the largest wall thickness in mm of the CA, SMA, CHA,
 # sma = trimesh.load('models/case1_SMA.STL')
 # object_meshes = {"tumor":tumor, "SMA":sma}
 
-#Case 2: high resolution, straight cylinder, rounded tumor, slightly less angle then 180 degrees
-# tumor = trimesh.load('models/case2_tumor.STL')
-
+# # Case 2: high resolution, straight cylinder, rounded tumor, slightly less angle then 180 degrees
 # tumor = trimesh.load('models/case2_tumor.STL')
 # sma = trimesh.load('models/case2_SMA.STL')
 # object_meshes = {"tumor":tumor, "SMA":sma}
@@ -61,20 +59,20 @@ object_plotter.add_object(tumor, label="tumor", color="y", alpha=0.2)
 # ============================================================
 # Compute centerline points and corresponding normals
 # ============================================================
-# slice_thickness = vessel_length / number_of_slices
 
-# #NOTE: ONLY CASE 1 & 2: Compute the centerline of the straight cylinder
-# centerline_points, normal_points = centerline_straightcylinder(vessel_length, slice_thickness)
-# object_plotter.add_points(centerline_points, color="black")
+#NOTE: ONLY CASE 1 & 2: Compute the centerline of the straight cylinder
+slice_thickness = vessel_length / number_of_slices
+centerline_points, normal_points = centerline_straightcylinder(vessel_length, slice_thickness)
+object_plotter.add_points(centerline_points, color="black")
 
 #Case 3
 centerline_points, normal_points, arc_length = centerline_case_3(number_of_slices)
-slice_thicknes = arc_length / number_of_slices
+slice_thickness = arc_length / number_of_slices
+object_plotter.add_points(centerline_points, color="black")
 
 # ============================================================
 # Create planes, compute intersections and create contours
 # ============================================================
-
 
 #Compute intersection points with planes perpendicular to the direction of the centerline of a specific vessel
 intersections_with_planes = intersection_planes_with_objects(object_meshes, centerline_points, normal_points)
@@ -82,9 +80,6 @@ intersections_with_planes = intersection_planes_with_objects(object_meshes, cent
 #Add the example plane as mesh to the visualization
 mesh = create_plane_mesh(centerline_points[example_plane], normal_points[example_plane], plane_size=13)
 object_plotter.add_object(mesh, label="plane", color="b", alpha=0.3)
-
-object_plotter.set_settings("Visualizations of the mock-case with the 3D tumor and vessel mesh including an example 2D slice plane")
-plt.show()
 
 #Create contour per object mesh per plane from intersection points
 all_contours = create_contour_from_intersection_points(intersections_with_planes, object_meshes, centerline_points, normal_points)
