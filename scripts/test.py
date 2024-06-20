@@ -79,46 +79,268 @@ def distance_between_points(point1, point2):
 
 
 
+def transform_to_2d(points, origin, normal):
+    # Ensure normal is a unit vector
+    normal = normal / np.linalg.norm(normal)
+    
+    # Choose an arbitrary vector that is not parallel to the normal
+    # because points on the plane we can choose the first point as the arbitrary vector
+    arbitrary_vector = points[0,:] - origin
+    arbitrary_vector /= np.linalg.norm(arbitrary_vector)
+    
+    B1 = arbitrary_vector
+    
+    B2 = np.cross(normal, B1)
+    B2 /= np.linalg.norm(B2)
+    
+    # Transform each point to 2D
+    transformed_points = []
+    for i in range(points.shape[0]):
+        translated_point = points[i,:] - origin
+        x = np.dot(translated_point, B1)
+        y = np.dot(translated_point, B2)
+        transformed_points.append([x, y])
+    
+    return np.array(transformed_points), B1, B2
+
+
+def transform_to_3d(points_2d, origin, B1, B2):
+    # Transform each 2D point back to 3D
+    transformed_points_3d = []
+    for point in points_2d:
+        x, y = point
+        point_3d = origin + x * B1 + y * B2
+        transformed_points_3d.append(point_3d)
+    
+    return np.array(transformed_points_3d)
+
+
+def test_transform_to_2d(normal, origin, points):
+    transformed_points, B1, B2 = transform_to_2d(points, origin, normal)
+    transformed_points_3d = transform_to_3d(transformed_points, origin, B1, B2)
+    
+    return transformed_points, transformed_points_3d
+
+
+def get_coordinate_frame_from_normal_and_points(normal, origin, points):
+    normal = normal / np.linalg.norm(normal)
+    
+    # Choose an arbitrary vector that is not parallel to the normal
+    # because points on the plane we can choose the first point as the arbitrary vector
+    arbitrary_vector = points[0,:] - origin
+    arbitrary_vector /= np.linalg.norm(arbitrary_vector)
+    
+    B1 = arbitrary_vector
+    
+    B2 = np.cross(normal, B1)
+    B2 /= np.linalg.norm(B2)
+    
+    return B1, B2
+
+
+def create_transformation_matrix(B1, B2, normal, origin):
+    """create the transformation matrix from the basis coordinate system to the new coordinate system"""
+    normal = normal / np.linalg.norm(normal)
+    B1 = B1 / np.linalg.norm(B1)
+    B2 = B2 / np.linalg.norm(B2)
+    
+    U = np.array([[1,0,0],
+                  [0,1,0],
+                  [0,0,1]])
+    
+    V = np.array([B1, B2, normal])
+    V_inv = np.linalg.inv(V)
+    
+    Rotation_matrix = V_inv @ U
+    
+    T_u_v = np.eye(4)
+    T_u_v[:3, :3] = Rotation_matrix
+    T_u_v[:3, 3] = origin
+    
+    T_v_u = np.linalg.inv(T_u_v)
+    
+    return T_u_v, T_v_u
+
+
+def transform_points_to_new_coordinate_system(points, T):
+    points_ones = np.hstack([points, np.ones((points.shape[0], 1))])
+    new_points = np.dot(T, points_ones.T).T
+    
+    return new_points[:,:3]
+
+
+def intersection_points_to_2d_array(intersection_points, normal, origin):
+    """ Convert the intersection points in the 3D space to the corresponding 2D points on the plane"""
+    # Ensure normal is a unit vector
+    normal = normal / np.linalg.norm(normal)
+    
+    # place all points below each other
+    reshaped_intersection_points = intersection_points.reshape(intersection_points.shape[0]*2, 3)
+    
+    # get the coordinate system of the plane
+    B1, B2 = get_coordinate_frame_from_normal_and_points(normal, origin, reshaped_intersection_points)
+    
+    # transform the points to the new coordinate system
+    transformed_points = transform_points_to_new_coordinate_system(reshaped_intersection_points, B1, B2, normal, origin)
+    
+    # remove the zero z axis
+    transformed_points = transformed_points[:, :2]
+    
+    return transformed_points
+    
+
+
 def main():
+    test = "plane10"
+    
+    print(int(test.split("plane")[1]))
+    
     tumor_mesh, sma_mesh = test_load()
     # Add your code here to perform operations on tumor and sma objects
+    
+    normal = np.array([1,1,0])
+    origin = np.array([1,1,1])
 
-    plane_test = Plane(np.array([0,0,0]), np.array([0,1,0]))
-    plane_mesh = plane_test.get_mesh()
+    plane_test = Plane(origin, normal)
+    plane_mesh = plane_test.get_mesh(plane_size=20.0)
     
     object_meshes = {
         "tumor": tumor_mesh,
         "sma": sma_mesh
     }
     
+    # object_plotter = ObjectPlotter()
+    # object_plotter.add_object(sma_mesh, color='r', alpha=0.7)
+    # object_plotter.add_object(tumor_mesh, color='y', alpha=0.5)
+    # object_plotter.add_object(plane_mesh, color='b', alpha=0.3)
+    # object_plotter.show()
+    
     
     # get intersection points for one plane with all objects
-    intersection_points = intersection_plane_with_objects(object_meshes, np.array([0,0,0]), np.array([0,1,0]))
+    intersection_points = intersection_plane_with_objects(object_meshes, origin, normal)
+    
+    intersection_points_tumor = intersection_points["tumor"]    
+    # Reshape from m,2,3 to m*2,3 to convert from a 2D to 3D array
+    reshaped_intersection_points = intersection_points_tumor.reshape(intersection_points_tumor.shape[0]*2, 3)
+    
+    print(reshaped_intersection_points.shape)
+    
+    print(reshaped_intersection_points[:5, :])
+    
+    B1, B2 = get_coordinate_frame_from_normal_and_points(normal, origin, reshaped_intersection_points)
+    
+    T_u_v, T_v_u = create_transformation_matrix(B1, B2, normal, origin)
+    
+    transformed_points = transform_points_to_new_coordinate_system(reshaped_intersection_points, T_v_u)
+    
+    print(transformed_points.shape)
+    
+    print(transformed_points[:5, :])
+    
+    # transform back to 3d
+    transformed_points_back = transform_points_to_new_coordinate_system(transformed_points, T_u_v)
+    
+    print(transformed_points_back[:5, :])
+    
+    print(transformed_points_back.shape)
+    
+    # plot the points
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(*reshaped_intersection_points.T, marker='o', color='r')
+    ax.scatter(*transformed_points.T)
+    ax.scatter(*transformed_points_back.T)
+    plt.show()
+    
+    # print(reshaped_intersection_points[:5, :])
+    # transformed_points, B1, B2 = transform_to_2d(reshaped_intersection_points, origin, normal)
+    
+    # # plot the 2d points
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111)
+    # ax.scatter(*transformed_points.T[:5, :])
+    # plt.show()
+    
+    # print(transformed_points[:5, :])
+    # transformed_points_3d = transform_to_3d(transformed_points, origin, B1, B2)
+    
+    # print(transformed_points_3d[:5, :])
+    
+    # # basis coordinate system
+    # U = np.array([[1,0,0],
+    #               [0,1,0],
+    #               [0,0,1]])
+    
+    # V = np.array([B1, B2, normal])
+    # V_inv = np.linalg.inv(V)
+    
+    # Rotation_matrix = V_inv @ U
+    
+    # T_u_v = np.eye(4)
+    # T_u_v[:3, :3] = Rotation_matrix
+    # T_u_v[:3, 3] = origin
+    
+    # T_v_u = np.linalg.inv(T_u_v)
 
     
-    # filter out the intersection points for the tumor and sma and reshape them to a 2D array
-    contour_points_tumor = intersection_points_to_2d_array(intersection_points["tumor"])
-    contour_points_sma = intersection_points_to_2d_array(intersection_points["sma"])
+    # transformed_points_3d_ones = np.hstack([transformed_points_3d, np.ones((transformed_points_3d.shape[0], 1))])
+    
+    # final_points = np.dot(T_v_u, transformed_points_3d_ones.T).T
+    
+    # print(final_points[:5, :])
     
     
-    # print(contour_points_tumor)
     
-    # create a LineString object for the tumor and sma so we can calculate the intersection points
-    contour_tumor = LineString(contour_points_tumor)
-    contour_vessel = LineString(contour_points_sma)
     
-    contour_centroid = contour_vessel.centroid
+    # # plot the basis vectors in 3d
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111, projection='3d')
+    # ax.quiver(*origin, *B1, color='r')
+    # ax.quiver(*origin, *B2, color='g')
+    # ax.quiver(*origin, *normal, color='b')
     
-    # test line intersection
-    line = LineString([[0,0], [-10,0]])
-    intersection_tumor = contour_tumor.intersection(line)
-    intersection_vessel = contour_vessel.intersection(line)
+    # # add original coordinate system
+    # ax.quiver(0,0,0,1,0,0, color='r')
+    # ax.quiver(0,0,0,0,1,0, color='g')
+    # ax.quiver(0,0,0,0,0,1, color='b')
     
-    contour_plotter = ContourPlotter()
-    contour_plotter.add_contour(contour_tumor, 'b')
-    contour_plotter.add_contour(contour_vessel, 'r')
-    contour_plotter.add_point(contour_centroid, 'go')
-    contour_plotter.show()
+    # # plot the transformed points
+    
+    # ax.scatter(*transformed_points.T, color='b')
+    # ax.scatter(*transformed_points_3d.T, color='r')
+    
+    # final_points_plot = final_points[:5, :3]
+    # ax.scatter(*final_points_plot.T, color='g')
+    
+    
+    # plt.show()
+    
+    
+    
+    
+    # # filter out the intersection points for the tumor and sma and reshape them to a 2D array
+    # contour_points_tumor = intersection_points_to_2d_array(intersection_points["tumor"])
+    # contour_points_sma = intersection_points_to_2d_array(intersection_points["sma"])
+    
+    
+    # # print(contour_points_tumor)
+    
+    # # create a LineString object for the tumor and sma so we can calculate the intersection points
+    # contour_tumor = LineString(contour_points_tumor)
+    # contour_vessel = LineString(contour_points_sma)
+    
+    # contour_centroid = contour_vessel.centroid
+    
+    # # test line intersection
+    # line = LineString([[0,0], [-10,0]])
+    # intersection_tumor = contour_tumor.intersection(line)
+    # intersection_vessel = contour_vessel.intersection(line)
+    
+    # contour_plotter = ContourPlotter()
+    # contour_plotter.add_contour(contour_tumor, color='b')
+    # contour_plotter.add_contour(contour_vessel, color='r')
+    # contour_plotter.add_point(contour_centroid, color='g', marker='o')
+    # contour_plotter.show()
     
     # plt.plot(contour_points_tumor[:,0], contour_points_tumor[:,1], 'b')
     # plt.plot(contour_points_sma[:,0], contour_points_sma[:,1], 'r')
