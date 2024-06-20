@@ -30,3 +30,35 @@ def centerline_straightcylinder(vessel_length, slice_thickness):
     cylinder_normal = normal_straightcylinder(p1, p2)
     normal_points = np.full(centerline_points.shape, cylinder_normal)
     return centerline_points, normal_points
+
+
+def centerline_case_3():
+    radius = 14
+    arc_degrees = 110
+    arc_radians = np.deg2rad(arc_degrees)
+    
+    # length of the arc
+    arc_length = radius * arc_radians
+    
+    n = 14
+    
+    # Calculate angle increments
+    theta_start = -arc_radians / 2
+    theta_end = arc_radians / 2
+    theta = np.linspace(theta_start, theta_end, n)
+
+    # Calculate points on the circle
+    points = np.array([(radius * np.cos(t), radius * np.sin(t)) for t in theta])
+
+
+    # Calculate tangent vectors
+    tangents = np.array([(-np.sin(t), np.cos(t)) for t in theta])
+
+    # Normalize tangent vectors (though they're already unit vectors)
+    tangents = tangents / np.linalg.norm(tangents, axis=1)[:, np.newaxis]
+    
+    # add row for z coordinate
+    points = np.hstack([points, np.zeros((n, 1))])
+    tangents = np.hstack([tangents, np.zeros((n, 1))])
+
+    return points, tangents
