@@ -122,7 +122,7 @@ def feature_angles(all_distances_filtered, per_degree, minimum_degrees):
                 
                 #If larger than the st of minimum degrees of interest, safe in dictionary
                 else:
-                    angle_dict[f'Angle:{angle_degree - per_degree}'] = [line_list[0], line_list[-1]]
+                    angle_dict[f'Angle_{angle_degree - per_degree}_degrees'] = [line_list[0], line_list[-1]]
                     angle_degree = 0
                     line_list = []
                     
