@@ -72,26 +72,7 @@ class ContourPlotter:
 
         # Add legend
         self.ax.legend()
-        
-class TablePlotter:
-    """Creates a table from a dictionary"""
-    def __init__(self):
-        self.fig, self.ax = plt.subplots()
-        
-        #Hide axes
-        self.ax.xaxis.set_visible(False)
-        self.ax.yaxis.set_visible(False)
-        self.ax.set_frame_on(False)
-
-    def create_table(self, rows, columns):
-        # Create the table
-        table = self.ax.table(cellText=list(rows), colLabels=columns, loc='center', cellLoc='center')
-        
-        #Set settings
-        table.auto_set_font_size(False)
-        table.set_fontsize(14)
-        table.scale(1.2, 1.2)
-
+    
         
 def create_plane_mesh(origin, normal, plane_size=2.0):
     """
