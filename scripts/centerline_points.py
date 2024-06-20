@@ -40,11 +40,10 @@ def centerline_case_3(number_of_slices):
     # length of the arc
     arc_length = radius * arc_radians
     
-    
     # Calculate angle increments
     theta_start = -arc_radians / 2
     theta_end = arc_radians / 2
-    theta = np.linspace(theta_start, theta_end, n)
+    theta = np.linspace(theta_start, theta_end, number_of_slices)
 
     # Calculate points on the circle
     points = np.array([(radius * np.cos(t), radius * np.sin(t)) for t in theta])
