@@ -49,11 +49,9 @@ def filter_distances(all_distances, vessel_wall):
         
     return all_distances_filtered
 
-def feature_maximum_contact_length(vessel_length, number_of_slices, all_distances_filtered):
+def feature_maximum_contact_length(all_distances_filtered, slice_thickness):
     """Calcute the maximum contact length between the tumor and the vessel and provide the planes which contribute to 
     this maximum contact length"""
-    
-    slice_thickness = vessel_length / (number_of_slices - 1)
     
     # Initialize lists
     plane_numbers = []
@@ -114,7 +112,6 @@ def feature_angles(all_distances_filtered, per_degree, minimum_degrees):
                 
                 #If close enough, add that line to the total angle
                 angle_degree += per_degree
-                print(angle_degree)
                 line_list.append(line)
                 
             #If not close enough, close angle and check if it is larger than the set minimum degrees of interest
