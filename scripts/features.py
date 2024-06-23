@@ -22,8 +22,11 @@ def calculate_distance(all_intersections):
                 for object_mesh in all_intersections[plane][line]:
                     points.append(all_intersections[plane][line][object_mesh])
             
-            if len(points) > 0:
+            if len(points) > 1:
                 distance = points[0].distance(points[1])
+                distance_per_line[line] = distance
+                
+            elif len(points) > 0:
                 distance_per_line[line] = distance
                 
             else:
@@ -122,10 +125,12 @@ def feature_angles(all_distances_filtered, per_degree, minimum_degrees):
                 
                 #If larger than the st of minimum degrees of interest, safe in dictionary
                 else:
-                    angle_dict[f'Angle_{angle_degree - per_degree}_degrees'] = [line_list[0], line_list[-1]]
+                    if line_list:
+                        angle_dict[f'Angle_{angle_degree - per_degree}_degrees'] = [line_list[0], line_list[-1]]
                     angle_degree = 0
                     line_list = []
-                    
-        all_angles[plane] = angle_dict
+        
+        if angle_dict:
+            all_angles[plane] = angle_dict
                 
     return all_angles
