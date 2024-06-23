@@ -24,10 +24,10 @@ def main():
 
     vessel_length = 30 #Provide the length of the segmented vessel in mm (to be measured in paraview)
     number_of_slices =  21 #Defines the resolution
-    per_degree = 3 #Degree of line segments
+    per_degree = 1 #Degree of line segments
     minimum_degrees = 10 #Provide a treshold of the minimum value of degrees between the vessel and the tumor that you are interested in
     example_plane = 12 #Provide as integer
-    vessel_wall = 0.9 #Provide the largest wall thickness in mm of the CA, SMA, CHA, SM or PV
+    vessel_wall = 1.5 #Provide the largest wall thickness in mm of the CA, SMA, CHA, SM or PV
 
     # ============================================================
     # Load data
@@ -38,15 +38,15 @@ def main():
     #Make sure you give the vessels the name of the corresponding vessel
     #DO NOT inmport any other structures then the vessels and the tumor
 
-    # #Case 1: Low resolution, straight cylinder
-    # tumor = trimesh.load('models/case1_tumor.STL')
-    # sma = trimesh.load('models/case1_SMA.STL')
-    # object_meshes = {"tumor":tumor, "SMA":sma}
-
-    # Case 2: high resolution, straight cylinder, rounded tumor, slightly less angle then 180 degrees
-    tumor = trimesh.load('models/case2_tumor.STL')
-    sma = trimesh.load('models/case2_SMA.STL')
+    #Case 1: Low resolution, straight cylinder
+    tumor = trimesh.load('models/case1_tumor.STL')
+    sma = trimesh.load('models/case1_SMA.STL')
     object_meshes = {"tumor":tumor, "SMA":sma}
+
+    # # Case 2: high resolution, straight cylinder, rounded tumor, slightly less angle then 180 degrees
+    # tumor = trimesh.load('models/case2_tumor.STL')
+    # sma = trimesh.load('models/case2_SMA.STL')
+    # object_meshes = {"tumor":tumor, "SMA":sma}
 
     # #Case 3: low resolution, curved cylinder
     # tumor = trimesh.load('models/case3_tumor.STL')
@@ -62,12 +62,12 @@ def main():
     # Compute centerline points and corresponding normals
     # ============================================================
 
-    #NOTE: ONLY CASE 1 & 2: Compute the centerline of the straight cylinder
+    # NOTE: ONLY CASE 1 & 2: Compute the centerline of the straight cylinder
     slice_thickness = vessel_length / number_of_slices
     centerline_points, normal_points = centerline_straightcylinder(vessel_length, slice_thickness)
     object_plotter.add_points(centerline_points, color="black")
 
-    #Case 3
+    # #Case 3
     # centerline_points, normal_points, arc_length = centerline_case_3(number_of_slices)
     # slice_thickness = arc_length / number_of_slices
     # object_plotter.add_points(centerline_points, color="black")
@@ -110,7 +110,7 @@ def main():
                 else:
                     contour_plotter.add_contour(line, color="y", linewidth=4)
         else:
-            count == 0 #in order to only add the label once to the legend
+            count = 0 #in order to only add the label once to the legend
             for line in plane_contour[object_mesh].geoms:
                 if count == 0:
                     contour_plotter.add_contour(line, label=(f'{object_mesh}'), color="r", linewidth=4)
@@ -143,7 +143,8 @@ def main():
 
     #Calculate the maximum contact length and provide in which planes this contact is made
     maximum_contact_length, plane_numbers_maximum_contact_length = feature_maximum_contact_length(all_distances_filtered, slice_thickness)
-    print(f'The maximum contact length is {maximum_contact_length} and present in the following planes {plane_numbers_maximum_contact_length}')
+    print(f'The maximum contact length is {maximum_contact_length} and present in the following planes')
+    print(f'{plane_numbers_maximum_contact_length}')
 
     #Calculate the angle of encasement of the tumor around the vessel
     all_angles = feature_angles(all_distances_filtered, per_degree, minimum_degrees)
@@ -156,7 +157,7 @@ def main():
     #Visualize planes with given angle
     for plane in all_angles:
         contour_plotter2 = ContourPlotter()
-        contour = all_contours_filtered[plane]
+        plane_contour = all_contours_filtered[plane]
         for object_mesh in plane_contour:
             if "tumor" in object_mesh:
                 count = 0 #in order to only add the label once to the legend
@@ -174,13 +175,21 @@ def main():
                         count += 1
                     else:
                         contour_plotter2.add_contour(line, color="r", linewidth=4)
+                        
+        #Plot the two lines that create the angle
         for angle in all_angles[plane]:
+        
+            #First line
             first_line_number = all_angles[plane][angle][0]
-            first_line_number = int(first_line_number[4:])
+            first_line = int(first_line_number[4:])
+            
+            #Second line
             second_line_number = all_angles[plane][angle][1]
-            second_line_number = int(second_line_number[4:])
-            contour_plotter2.add_contour(lines[first_line_number], color="black", linestyle="--")
-            contour_plotter2.add_contour(lines[second_line_number], color="black", linestyle="--")
+            second_line = int(second_line_number[4:])
+            
+            #Plot
+            contour_plotter2.add_contour(lines[first_line], color="black", linestyle="--")
+            contour_plotter2.add_contour(lines[second_line], color="black", linestyle="--")
             title = f'{angle.replace("_", " ")} for {plane}' #Set title for the figure
             contour_plotter2.set_settings(title)
 
