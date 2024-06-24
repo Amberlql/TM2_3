@@ -73,7 +73,7 @@ def main():
         centerline_points, normal_points = centerline_straightcylinder(vessel_length, slice_thickness)
 
         
-         #Visualize object_meshes in a 3D visualization plot to get insight into the patient case
+        #Visualize object_meshes in a 3D visualization plot to get insight into the patient case
         object_plotter = ObjectPlotter()
         object_plotter.add_object(sma, label="SMA", color="r", alpha=0.2)
         object_plotter.add_object(tumor, label="tumor", color="y", alpha=0.2)
