@@ -233,6 +233,10 @@ def main():
     contour_plotter.set_settings(title)
     plt.show()
 
-#Run the main function
+
+# ============================================================
+# Run the main code
+# ============================================================
+
 if __name__ == "__main__":
     main()
