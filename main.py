@@ -71,6 +71,12 @@ def main():
         #Compute the centerline of the straight cylinder
         slice_thickness = vessel_length / number_of_slices
         centerline_points, normal_points = centerline_straightcylinder(vessel_length, slice_thickness)
+
+        
+         #Visualize object_meshes in a 3D visualization plot to get insight into the patient case
+        object_plotter = ObjectPlotter()
+        object_plotter.add_object(sma, label="SMA", color="r", alpha=0.2)
+        object_plotter.add_object(tumor, label="tumor", color="y", alpha=0.2)
         object_plotter.add_points(centerline_points, color="black")
         
     elif mock_case == 2: 
@@ -85,6 +91,11 @@ def main():
         #Compute the centerline of the straight cylinder
         slice_thickness = vessel_length / number_of_slices
         centerline_points, normal_points = centerline_straightcylinder(vessel_length, slice_thickness)
+        
+        #Visualize object_meshes in a 3D visualization plot to get insight into the patient case
+        object_plotter = ObjectPlotter()
+        object_plotter.add_object(sma, label="SMA", color="r", alpha=0.2)
+        object_plotter.add_object(tumor, label="tumor", color="y", alpha=0.2)
         object_plotter.add_points(centerline_points, color="black")
         
     else:
@@ -95,12 +106,12 @@ def main():
         #Compute the centerline of the curved cylinder
         centerline_points, normal_points, arc_length = centerline_case_3(number_of_slices)
         slice_thickness = arc_length / number_of_slices
+        
+        #Visualize object_meshes in a 3D visualization plot to get insight into the patient case
+        object_plotter = ObjectPlotter()
+        object_plotter.add_object(sma, label="SMA", color="r", alpha=0.2)
+        object_plotter.add_object(tumor, label="tumor", color="y", alpha=0.2)
         object_plotter.add_points(centerline_points, color="black")
-
-    #Visualize object_meshes in a 3D visualization plot to get insight into the patient case
-    object_plotter = ObjectPlotter()
-    object_plotter.add_object(sma, label="SMA", color="r", alpha=0.2)
-    object_plotter.add_object(tumor, label="tumor", color="y", alpha=0.2)
 
 
     # ============================================================
