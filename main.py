@@ -1,10 +1,23 @@
-"""Welcome"""
+"""
+Pancreatic Tumor Vascularization Quantification
+================================================
+
+This script quantifies the vascularization of pancreatic tumors using multiple hand-written modules.
+It involves loading object meshes of the tumor and vessels, creating contours based on the mesh cross-sected
+with a plane in perpendicular to the direction of the centerline of the vessel and calculating
+the maximum contact area and angle of encasement based on line intersections with contours in a 2D plane.
+The code is based on three mock cases. Some parts of the code are hard-coded for these cases, this is always mentioned
+in the docstring or in a comment. 
+
+Author: Amber Liqui Lung
+Date: 2024-06-24
+"""
+
 # ============================================================
 # Imports
 # ============================================================
 
 #Import packages
-import numpy as np
 import trimesh
 import matplotlib.pyplot as plt
 
@@ -21,56 +34,74 @@ def main():
     # ============================================================
     # Initialization of global parameters
     # ============================================================
-
-    vessel_length = 30 #Provide the length of the segmented vessel in mm (to be measured in paraview)
+    
     number_of_slices =  21 #Defines the resolution
     per_degree = 1 #Degree of line segments
     minimum_degrees = 10 #Provide a treshold of the minimum value of degrees between the vessel and the tumor that you are interested in
     example_plane = 12 #Provide as integer
     vessel_wall = 1.5 #Provide the largest wall thickness in mm of the CA, SMA, CHA, SM or PV
-
-    # ============================================================
-    # Load data
-    # ============================================================
+    
+    #!Note that the vessel length, centerline and normals are needed for calculations as well, 
+    #but this is integrated for the three mock-cases in this code
+    
+    
+    # ======================================================================================
+    # Load data and compute centerline points and corresponding normals: MOCK CASE SPECIFIC
+    # ======================================================================================
 
     #Load data and add to the dictionary object_meshes
     #Make sure you always name the tumor "tumor..."
     #Make sure you give the vessels the name of the corresponding vessel
     #DO NOT inmport any other structures then the vessels and the tumor
-
+    
+    mock_case = 1 #Pick which mock case you want to run (case 1, 2 and three)
     #Case 1: Low resolution, straight cylinder
-    tumor = trimesh.load('models/case1_tumor.STL')
-    sma = trimesh.load('models/case1_SMA.STL')
-    object_meshes = {"tumor":tumor, "SMA":sma}
+    #Case 2: high resolution, straight cylinder, rounded tumor, slightly less angle then 180 degrees
+    #Case 3: low resolution, curved cylinder
 
-    # # Case 2: high resolution, straight cylinder, rounded tumor, slightly less angle then 180 degrees
-    # tumor = trimesh.load('models/case2_tumor.STL')
-    # sma = trimesh.load('models/case2_SMA.STL')
-    # object_meshes = {"tumor":tumor, "SMA":sma}
-
-    # #Case 3: low resolution, curved cylinder
-    # tumor = trimesh.load('models/case3_tumor.STL')
-    # sma = trimesh.load('models/case3_SMA.STL')
-    # object_meshes = {"tumor":tumor, "SMA":sma}
+    if mock_case == 1:
+        #Provide the length of the segmented vessel in mm 
+        vessel_length = 30 
+        
+        #Load data
+        tumor = trimesh.load('models/case1_tumor.STL')
+        sma = trimesh.load('models/case1_SMA.STL')
+        object_meshes = {"tumor":tumor, "SMA":sma}
+        
+        #Compute the centerline of the straight cylinder
+        slice_thickness = vessel_length / number_of_slices
+        centerline_points, normal_points = centerline_straightcylinder(vessel_length, slice_thickness)
+        object_plotter.add_points(centerline_points, color="black")
+        
+    elif mock_case == 2: 
+        #Provide the length of the segmented vessel in mm 
+        vessel_length = 30 
+        
+        #Load data
+        tumor = trimesh.load('models/case2_tumor.STL')
+        sma = trimesh.load('models/case2_SMA.STL')
+        object_meshes = {"tumor":tumor, "SMA":sma}
+        
+        #Compute the centerline of the straight cylinder
+        slice_thickness = vessel_length / number_of_slices
+        centerline_points, normal_points = centerline_straightcylinder(vessel_length, slice_thickness)
+        object_plotter.add_points(centerline_points, color="black")
+        
+    else:
+        tumor = trimesh.load('models/case3_tumor.STL')
+        sma = trimesh.load('models/case3_SMA.STL')
+        object_meshes = {"tumor":tumor, "SMA":sma}
+        
+        #Compute the centerline of the curved cylinder
+        centerline_points, normal_points, arc_length = centerline_case_3(number_of_slices)
+        slice_thickness = arc_length / number_of_slices
+        object_plotter.add_points(centerline_points, color="black")
 
     #Visualize object_meshes in a 3D visualization plot to get insight into the patient case
     object_plotter = ObjectPlotter()
     object_plotter.add_object(sma, label="SMA", color="r", alpha=0.2)
     object_plotter.add_object(tumor, label="tumor", color="y", alpha=0.2)
 
-    # ============================================================
-    # Compute centerline points and corresponding normals
-    # ============================================================
-
-    # NOTE: ONLY CASE 1 & 2: Compute the centerline of the straight cylinder
-    slice_thickness = vessel_length / number_of_slices
-    centerline_points, normal_points = centerline_straightcylinder(vessel_length, slice_thickness)
-    object_plotter.add_points(centerline_points, color="black")
-
-    # #Case 3
-    # centerline_points, normal_points, arc_length = centerline_case_3(number_of_slices)
-    # slice_thickness = arc_length / number_of_slices
-    # object_plotter.add_points(centerline_points, color="black")
 
     # ============================================================
     # Create planes, compute intersections and create contours
@@ -83,11 +114,12 @@ def main():
     mesh = create_plane_mesh(centerline_points[example_plane], normal_points[example_plane], plane_size=13)
     object_plotter.add_object(mesh, label="plane", color="b", alpha=0.3)
 
-    #Create contour per object mesh per plane from intersection points
+    #Create a contour per object mesh per plane from intersection points
     all_contours = create_contour_from_intersection_points(intersections_with_planes, object_meshes, centerline_points, normal_points)
 
     #Filter contours to only achieve the planes in which the tumor is present
     all_contours_filtered = filter_planes(all_contours)
+
 
     # ================================================================
     # Create lines, compute intersections, calculate distances, filter 
@@ -136,6 +168,7 @@ def main():
     if len(all_distances_filtered.keys()) == 0:
         print('There is no contact between the vessel and the tumor')
         return
+
 
     # ================================================================
     # Compute maximum contact length and angles of encasement 
@@ -200,6 +233,6 @@ def main():
     contour_plotter.set_settings(title)
     plt.show()
 
-
+#Run the main function
 if __name__ == "__main__":
     main()
