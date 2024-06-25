@@ -27,7 +27,8 @@ from scripts.centerline_points import centerline_straightcylinder, centerline_ca
 from scripts.plane_intersections import intersection_planes_with_objects
 from scripts.contour_creation import create_contour_from_intersection_points
 from scripts.line_intersections import filter_planes, line_intersections
-from scripts.features import calculate_distance, filter_distances, feature_maximum_contact_length, feature_angles
+from scripts.distances import calculate_distance, filter_distances
+from scripts.features import feature_maximum_contact_length, feature_angles
 
 
 def main():

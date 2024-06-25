@@ -1,56 +1,6 @@
 #Import packages
 import numpy as np
 
-def calculate_distance(all_intersections):
-    """Calculate the distances between the tumor and vessel in mm per plane per line"""
-    
-    #Initialize dictonary per plane
-    all_distances = {}
-    
-    for plane in all_intersections:
-        
-        #Initialize dictionary per line
-        distance_per_line = {}
-        
-        for line in all_intersections[plane]:
-            
-            #Initialize list
-            points = []
-            
-            #Filter only the lines that have an intersection with the tumor
-            if 'tumor' in all_intersections[plane][line]:
-                for object_mesh in all_intersections[plane][line]:
-                    points.append(all_intersections[plane][line][object_mesh])
-            
-            if len(points) > 1:
-                distance = points[0].distance(points[1])
-                distance_per_line[line] = distance
-                
-            elif len(points) > 0:
-                distance_per_line[line] = distance
-                
-            else:
-                distance_per_line[line] = np.inf #infinite value to show no intersection with the tumor
-                
-        #Add to dictionary
-        all_distances[plane] = distance_per_line
-    
-    return all_distances
-
-def filter_distances(all_distances, vessel_wall):
-    """Filter the planes where at least on one of the lines the distance between the tumor and the vessel is smaller or equal to
-    the vessel wall thickness set in the parameters in the main file"""
-    
-    #Initialize dictionary
-    all_distances_filtered = {}
-    
-    for plane in all_distances:
-        for line in all_distances[plane]:
-            if all_distances[plane][line] <= vessel_wall: 
-                all_distances_filtered[plane] = all_distances[plane]
-                break
-        
-    return all_distances_filtered
 
 def feature_maximum_contact_length(all_distances_filtered, slice_thickness):
     """Calcute the maximum contact length between the tumor and the vessel and provide the planes which contribute to 
@@ -92,6 +42,7 @@ def feature_maximum_contact_length(all_distances_filtered, slice_thickness):
     maximum_contact_length = longest_streak * slice_thickness
 
     return maximum_contact_length, plane_numbers_longest_streak
+
 
 def feature_angles(all_distances_filtered, per_degree, minimum_degrees):
     """Calculate the maximum angle for a given plane and safe the lines between which this angle is created"""
