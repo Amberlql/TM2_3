@@ -3,25 +3,7 @@ import numpy as np
 
 
 def calculate_distance(all_intersections):
-    """
-    Calculate the distances between the tumor and vessel in mm per plane per line.
-    
-    This function takes a dictionary of intersections, where each intersection represents the coordinates of 
-    where the tumor and vessel intersectin with 360 degree of lines in a specific plane. It computes the distance 
-    between the tumor and the vessel or each line on each plane. If no intersection with the tumor is found, 
-    the distance is set to infinity.
-
-    Parameters:
-    all_intersections (dict): A dictionary where the first level keys are plane numbers the second level keys 
-                              are line numbers, the third level are the object mesh names ('tumor', 'vessel', 
-                              etc.) and the values are the coordinates of their intersection with the line in 
-                              the specific plane.
-
-    Returns:
-    dict: A dictionary where the keys are plane identifiers, the values are dictionaries with line identifiers
-          as keys and the computed distances (in mm) as values. If a line has no intersection with the tumor,
-          the distance is set to infinity.
-    """
+    """Calculate the distances between the tumor and vessel in mm per plane per line."""
     
     #Initialize dictonary per plane
     all_distances = {}
@@ -41,13 +23,10 @@ def calculate_distance(all_intersections):
                 for object_mesh in all_intersections[plane][line]:
                     points.append(all_intersections[plane][line][object_mesh])
             
-            if len(points) > 1:
+            if len(points) >= 2:
                 distance = points[0].distance(points[1])
                 distance_per_line[line] = distance
-                
-            elif len(points) > 0:
-                distance_per_line[line] = distance
-                
+   
             else:
                 distance_per_line[line] = np.inf #infinite value to show no intersection with the tumor
                 
@@ -62,12 +41,28 @@ def filter_distances(all_distances, vessel_wall):
     the vessel wall thickness set in the parameters in the main file"""
     
     #Initialize dictionary
-    all_distances_filtered = {}
+    all_planes_filtered = {}
     
+    #Add plane to dictionary if there is contact between the tumor and vessel at a certain point
     for plane in all_distances:
         for line in all_distances[plane]:
             if all_distances[plane][line] <= vessel_wall: 
-                all_distances_filtered[plane] = all_distances[plane]
+                all_planes_filtered[plane] = all_distances[plane]
                 break
-        
+            
+    #Initialize dictionary
+    all_distances_filtered = {}
+            
+    #Change line value in dictionary if for that line, the tumor is not close enough to the vessel to make contact
+    for plane in all_planes_filtered:
+        #Initialize dictionary
+        all_lines_filtered = {}
+        for line in all_planes_filtered[plane]:
+            if all_planes_filtered[plane][line] <= vessel_wall: 
+                all_lines_filtered[line] = all_planes_filtered[plane][line]
+            else:
+                all_lines_filtered[line] = np.inf
+                
+        all_distances_filtered[plane] = all_lines_filtered
+
     return all_distances_filtered

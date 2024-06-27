@@ -7,17 +7,20 @@ def euclidian_distance(p1, p2):
                 (p2[1] - p1[1])**2 + 
                 (p2[2] - p1[2])**2)
 
-    
+
 def feature_maximum_contact_length(all_distances_filtered, centerline_points):
     """Calcute the maximum contact length between the tumor and the vessel and provide the planes which contribute to 
     this maximum contact length"""
     
     # Initialize lists
     plane_numbers = []
-    
+   
     for plane in all_distances_filtered:
-        plane_index = int((plane.split("plane")[1]))
-        plane_numbers.append(plane_index)
+        if all(value == np.inf for value in all_distances_filtered[plane].values()):
+            print(f'no contact in {plane}')
+        else:
+            plane_index = int((plane.split("plane")[1]))
+            plane_numbers.append(plane_index)
 
     # Count the longest consecutive range
     longest_streak = 1
@@ -56,7 +59,6 @@ def feature_maximum_contact_length(all_distances_filtered, centerline_points):
     
     for i in range(len(points) - 1):
         maximum_contact_length += euclidian_distance(points[i], points[i+1])
-    # maximum_contact_length = longest_streak * slice_thickness
 
     return maximum_contact_length, plane_numbers_longest_streak
 
@@ -87,18 +89,18 @@ def feature_angles(all_distances_filtered, per_degree, minimum_degrees):
                 
             #If not close enough, close angle and check if it is larger than the set minimum degrees of interest
             else:
-                if angle_degree < minimum_degrees:
-                    angle_degree = 0
-                    line_list = []
-                
-                #If larger than the st of minimum degrees of interest, safe in dictionary
-                else:
+                if angle_degree >= minimum_degrees:
                     if line_list:
                         angle_dict[f'Angle_{angle_degree}_degrees'] = [line_list[0], line_list[-1]]  #Note that due to the counting of python you do not have to substract the first line
-                    angle_degree = 0
-                    line_list = []
+                
+                angle_degree = 0
+                line_list = []
         
+        if angle_degree >= minimum_degrees:
+            if line_list:
+                angle_dict[f'Angle_{angle_degree}_degrees'] = [line_list[0], line_list[-1]]
+                
         if angle_dict:
             all_angles[plane] = angle_dict
-                
+            
     return all_angles
