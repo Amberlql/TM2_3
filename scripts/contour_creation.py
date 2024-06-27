@@ -2,7 +2,7 @@
 import numpy as np
 from shapely.geometry import LineString, MultiLineString
 
-def get_coordinate_frame_from_normal_and_points(normal, origin, points):
+def get_coordinate_frame_from_normal_and_points(origin, normal, points):
     """Create coordinate basis vectors (x,y,z)"""
     
     # Ensure normal is a unit vector
@@ -25,7 +25,7 @@ def get_coordinate_frame_from_normal_and_points(normal, origin, points):
     return B1, B2
 
 
-def create_transformation_matrix(B1, B2, normal, origin):
+def create_transformation_matrix(B1, B2, origin, normal):
     """Create the transformation matrix from the basis coordinate system to the new coordinate system"""
     
     # Ensure normal is a unit vector
@@ -75,7 +75,7 @@ def transform_points_to_new_coordinate_system(points, T):
     return new_points[:,:3]
 
 
-def intersection_points_to_2d_array(intersection_points, normal, origin):
+def intersection_points_to_2d_array(intersection_points, origin, normal):
     """ Convert the intersection points in the 3D space to the corresponding 2D points on the plane"""
     # First check if the points array is not empty
     if intersection_points.shape[0] == 0:
@@ -88,10 +88,10 @@ def intersection_points_to_2d_array(intersection_points, normal, origin):
     reshaped_intersection_points = intersection_points.reshape(intersection_points.shape[0]*2, 3)
     
     # Get the coordinate system of the plane based on the origin and corresponding normal
-    B1, B2 = get_coordinate_frame_from_normal_and_points(normal, origin, reshaped_intersection_points)
+    B1, B2 = get_coordinate_frame_from_normal_and_points(origin, normal, reshaped_intersection_points)
     
     # Create the transformation matrix, only to plane is used to provide 2D representation
-    T_to_global, T_to_plane = create_transformation_matrix(B1, B2, normal, origin)
+    T_to_global, T_to_plane = create_transformation_matrix(B1, B2, origin, normal)
     
     # Transform the points to the new coordinate system
     transformed_points = transform_points_to_new_coordinate_system(reshaped_intersection_points, T_to_plane)
@@ -119,7 +119,7 @@ def create_contour_from_intersection_points(intersections_with_planes, object_me
         for object_mesh in object_meshes:
                 
             #Move points to 2D plane coordinate system
-            contour_points = intersection_points_to_2d_array(intersections_with_planes[plane][object_mesh], normal, origin)
+            contour_points = intersection_points_to_2d_array(intersections_with_planes[plane][object_mesh], origin, normal)
             
             #Initialize empty contour
             contour = MultiLineString([])
