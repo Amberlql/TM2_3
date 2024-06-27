@@ -39,7 +39,6 @@ def centerline_case_3(number_of_slices):
     
     # length of the arc
     arc_length = radius * arc_radians
-    print(arc_length)
     
     # Calculate angle increments
     theta_start = -arc_radians / 2
