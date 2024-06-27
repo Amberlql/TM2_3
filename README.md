@@ -22,12 +22,10 @@ To run the script, ensure you have the necessary packages installed:
 Adjust parameters such as number_of_slices, per_degree, minimum_degrees, example_plane, and vessel_wall according to your requirements and the specific mock case chosen.
 
 2. Initialize Data and Compute Centerline:
-
 Load tumor and vessel meshes (*.STL) for the chosen mock case.
 Compute the centerline of the vessel using functions like centerline_straightcylinder or centerline_case_3, depending on the mock case.
 
 3. Create Planes, Compute Intersections, and Create Contours:
-
 Compute intersection points of planes with object meshes.
 Create contours from these intersection points to visualize the cross-sections.
 
