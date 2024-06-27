@@ -1,8 +1,14 @@
 #Import packages
 import numpy as np
 
+def euclidian_distance(p1, p2):
+    """This function calculates the eucledian distance between two three dimensional points"""
+    return np.sqrt((p2[0] - p1[0])**2 + 
+                (p2[1] - p1[1])**2 + 
+                (p2[2] - p1[2])**2)
 
-def feature_maximum_contact_length(all_distances_filtered, slice_thickness):
+    
+def feature_maximum_contact_length(all_distances_filtered, centerline_points):
     """Calcute the maximum contact length between the tumor and the vessel and provide the planes which contribute to 
     this maximum contact length"""
     
@@ -37,9 +43,20 @@ def feature_maximum_contact_length(all_distances_filtered, slice_thickness):
     if current_streak > longest_streak:
         longest_streak = current_streak
         plane_numbers_longest_streak = plane_numbers_current_streak.copy()
+        
+    # Select only the centerline points (origins of the planes in the global coordinate system)
+    points = []
+    for index in plane_numbers_longest_streak:
+        points.append(centerline_points[index])
+      
+    points = [tuple(arr) for arr in points] #Convert to a list of tupples to use
     
-    # Calculate the longest distance of contact in mm
-    maximum_contact_length = longest_streak * slice_thickness
+    # Approximate the longest distance of contact in mm using the global coordinates of the center by adding the euclidean distances betweeen the points
+    maximum_contact_length = 0
+    
+    for i in range(len(points) - 1):
+        maximum_contact_length += euclidian_distance(points[i], points[i+1])
+    # maximum_contact_length = longest_streak * slice_thickness
 
     return maximum_contact_length, plane_numbers_longest_streak
 
