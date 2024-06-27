@@ -36,10 +36,10 @@ def main():
     # Initialization of global parameters
     # ============================================================
     
-    number_of_slices =  20 #Defines the resolution
-    per_degree = 1 #Degree of line segments
+    number_of_slices = 20 #Defines the resolution
+    per_degree = 3 #Degree of line segments
     minimum_degrees = 10 #Provide a treshold of the minimum value of degrees between the vessel and the tumor that you are interested in
-    example_plane = 12 #Provide as integer
+    example_plane = 10 #Provide as integer
     vessel_wall = 1.5 #Provide the largest wall thickness in mm of the CA, SMA, CHA, SM or PV
     
     #!Note that the vessel length, centerline and normals are needed for calculations as well, 
@@ -180,7 +180,6 @@ def main():
         print('There is no contact between the vessel and the tumor')
         return
 
-
     # ================================================================
     # Compute maximum contact length and angles of encasement 
     # ================================================================
@@ -232,8 +231,8 @@ def main():
                         contour_plotter2.add_contour(line, color="r", linewidth=4)
                         
         #Plot the two lines that create the angle
+        count = 0 #in order to be able to give the lines a different color if there are a maximum of four angles
         for angle in all_angles[plane]:
-        
             #First line
             first_line_number = all_angles[plane][angle][0]
             first_line = int(first_line_number[4:])
@@ -242,18 +241,27 @@ def main():
             second_line_number = all_angles[plane][angle][1]
             second_line = int(second_line_number[4:])
             
+            if count <= 1 or 3 < count < 5: 
             #Plot
-            contour_plotter2.add_contour(lines[first_line], color="black", linestyle="--")
-            contour_plotter2.add_contour(lines[second_line], color="black", linestyle="--")
-            title = f'{angle.replace("_", " ")} for {plane}' #Set title for the figure
-            contour_plotter2.set_settings(title)
+                contour_plotter2.add_contour(lines[first_line], color="black", linestyle="--")
+                contour_plotter2.add_contour(lines[second_line], color="black", linestyle="--")
+                title = f'{angle.replace("_", " ")} for {plane}' #Set title for the figure
+                contour_plotter2.set_settings(title)
+                count += 2
+            
+            else:
+                contour_plotter2.add_contour(lines[first_line], color="m", linestyle="--")
+                contour_plotter2.add_contour(lines[second_line], color="m", linestyle="--")
+                title = f'{angle.replace("_", " ")} for {plane}' #Set title for the figure
+                contour_plotter2.set_settings(title)
+                count += 2
 
     #Show all figures
     title = "Visualizations of the mock-case with the 3D tumor and vessel mesh including an example 2D slice plane" #Set title for the figure
     object_plotter.set_settings(title)
     title = "Visualization of a 2D cross-sectional plane with and intersection points with all lines" #Set title of figure
     contour_plotter.set_settings(title)
-    title = "Visualization of the 3D tumor and vessel mesh including the first and lost plane of the maximum contact length" #Set title of figure
+    title = "Visualization of the 3D tumor and vessel mesh including the first and last plane of the maximum contact length" #Set title of figure
     object_plotter2.set_settings(title)
     plt.show()
 
