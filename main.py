@@ -36,7 +36,7 @@ def main():
     # Initialization of global parameters
     # ============================================================
     
-    number_of_slices =  21 #Defines the resolution
+    number_of_slices =  20 #Defines the resolution
     per_degree = 1 #Degree of line segments
     minimum_degrees = 10 #Provide a treshold of the minimum value of degrees between the vessel and the tumor that you are interested in
     example_plane = 12 #Provide as integer
@@ -60,23 +60,22 @@ def main():
     #Case 2: high resolution, straight cylinder, rounded tumor, slightly less angle then 180 degrees
     #Case 3: low resolution, curved cylinder
 
-    if mock_case == 1:
+    if mock_case == 3:
         #Provide the length of the segmented vessel in mm 
         vessel_length = 30 
         
         #Load data
         tumor = trimesh.load('models/case1_tumor.STL')
-        sma = trimesh.load('models/case1_SMA.STL')
-        object_meshes = {"tumor":tumor, "SMA":sma}
+        vessel = trimesh.load('models/case1_SMA.STL')
+        object_meshes = {"tumor":tumor, "SMA":vessel} #Always add the tumor first and then the vessel
         
         #Compute the centerline of the straight cylinder
         slice_thickness = vessel_length / number_of_slices
         centerline_points, normal_points = centerline_straightcylinder(vessel_length, slice_thickness)
 
-        
         #Visualize object_meshes in a 3D visualization plot to get insight into the patient case
         object_plotter = ObjectPlotter()
-        object_plotter.add_object(sma, label="SMA", color="r", alpha=0.2)
+        object_plotter.add_object(vessel, label=f'{list(object_meshes.keys())[1]}', color="r", alpha=0.2)
         object_plotter.add_object(tumor, label="tumor", color="y", alpha=0.2)
         object_plotter.add_points(centerline_points, color="black")
         
@@ -86,8 +85,8 @@ def main():
         
         #Load data
         tumor = trimesh.load('models/case2_tumor.STL')
-        sma = trimesh.load('models/case2_SMA.STL')
-        object_meshes = {"tumor":tumor, "SMA":sma}
+        vessel = trimesh.load('models/case2_SMA.STL')
+        object_meshes = {"tumor":tumor, "SMA":vessel}
         
         #Compute the centerline of the straight cylinder
         slice_thickness = vessel_length / number_of_slices
@@ -95,14 +94,14 @@ def main():
         
         #Visualize object_meshes in a 3D visualization plot to get insight into the patient case
         object_plotter = ObjectPlotter()
-        object_plotter.add_object(sma, label="SMA", color="r", alpha=0.2)
+        object_plotter.add_object(vessel, label=f'{list(object_meshes.keys())[1]}', color="r", alpha=0.2)
         object_plotter.add_object(tumor, label="tumor", color="y", alpha=0.2)
         object_plotter.add_points(centerline_points, color="black")
         
     else:
         tumor = trimesh.load('models/case3_tumor.STL')
-        sma = trimesh.load('models/case3_SMA.STL')
-        object_meshes = {"tumor":tumor, "SMA":sma}
+        vessel = trimesh.load('models/case3_SMA.STL')
+        object_meshes = {"tumor":tumor, "SMA":vessel}
         
         #Compute the centerline of the curved cylinder
         centerline_points, normal_points, arc_length = centerline_case_3(number_of_slices)
@@ -110,7 +109,7 @@ def main():
         
         #Visualize object_meshes in a 3D visualization plot to get insight into the patient case
         object_plotter = ObjectPlotter()
-        object_plotter.add_object(sma, label="SMA", color="r", alpha=0.2)
+        object_plotter.add_object(vessel, label=f'{list(object_meshes.keys())[1]}', color="r", alpha=0.2)
         object_plotter.add_object(tumor, label="tumor", color="y", alpha=0.2)
         object_plotter.add_points(centerline_points, color="black")
 
@@ -186,10 +185,21 @@ def main():
     # Compute maximum contact length and angles of encasement 
     # ================================================================
 
-    #Calculate the maximum contact length and provide in which planes this contact is made
-    maximum_contact_length, plane_numbers_maximum_contact_length = feature_maximum_contact_length(all_distances_filtered, slice_thickness)
+    #Calculate the maximum contact length and provide in which planes this contact is made and visualize this
+    maximum_contact_length, plane_numbers_maximum_contact_length = feature_maximum_contact_length(all_distances_filtered, centerline_points)
     print(f'The maximum contact length is {maximum_contact_length} and present in the following planes')
     print(f'{plane_numbers_maximum_contact_length}')
+    
+    object_plotter2 = ObjectPlotter()
+    object_plotter2.add_object(vessel, label=f'{list(object_meshes.keys())[1]}', color="r", alpha=0.2)
+    object_plotter2.add_object(tumor, label="tumor", color="y", alpha=0.2)
+    object_plotter2.add_points(centerline_points, color="black")
+    
+    mesh1 = create_plane_mesh(centerline_points[plane_numbers_maximum_contact_length[0]], normal_points[plane_numbers_maximum_contact_length[0]], plane_size=13)
+    object_plotter2.add_object(mesh1, label="plane", color="b", alpha=0.3)
+    
+    mesh2 = create_plane_mesh(centerline_points[plane_numbers_maximum_contact_length[-1]], normal_points[plane_numbers_maximum_contact_length[-1]], plane_size=13)
+    object_plotter2.add_object(mesh2, label="plane", color="b", alpha=0.3)
 
     #Calculate the angle of encasement of the tumor around the vessel
     all_angles = feature_angles(all_distances_filtered, per_degree, minimum_degrees)
@@ -243,6 +253,8 @@ def main():
     object_plotter.set_settings(title)
     title = "Visualization of a 2D cross-sectional plane with and intersection points with all lines" #Set title of figure
     contour_plotter.set_settings(title)
+    title = "Visualization of the 3D tumor and vessel mesh including the first and lost plane of the maximum contact length" #Set title of figure
+    object_plotter2.set_settings(title)
     plt.show()
 
 
