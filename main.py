@@ -40,7 +40,7 @@ def main():
     per_degree = 3 #Degree of line segments
     minimum_degrees = 10 #Provide a treshold of the minimum value of degrees between the vessel and the tumor that you are interested in
     example_plane = 10 #Provide as integer
-    vessel_wall = 1.5 #Provide the largest wall thickness in mm of the CA, SMA, CHA, SM or PV
+    vessel_wall = 1.3 #Provide the largest wall thickness in mm of the CA, SMA, CHA, SM or PV
     
     #!Note that the vessel length, centerline and normals are needed for calculations as well, 
     #but this is integrated for the three mock-cases in this code
@@ -55,12 +55,12 @@ def main():
     #Make sure you give the vessels the name of the corresponding vessel
     #DO NOT inmport any other structures then the vessels and the tumor
     
-    mock_case = 1 #Pick which mock case you want to run (case 1, 2 and three)
+    mock_case = 3 #Pick which mock case you want to run (case 1, 2 and three)
     #Case 1: Low resolution, straight cylinder
     #Case 2: high resolution, straight cylinder, rounded tumor, slightly less angle then 180 degrees
     #Case 3: low resolution, curved cylinder
 
-    if mock_case == 3:
+    if mock_case == 1:
         #Provide the length of the segmented vessel in mm 
         vessel_length = 30 
         
