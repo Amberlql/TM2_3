@@ -18,8 +18,10 @@ def normal_straightcylinder(p1, p2):
     
     return cylinder_normal
 
-def centerline_straightcylinder(vessel_length, slice_thickness):
+def centerline_straightcylinder(number_of_slices):
     """Compute the centerline of a straight cylinder"""
+    vessel_length = 30 #Hardcoded based on the mock case
+    slice_thickness = vessel_length / number_of_slices
     
     p1 = np.array([0, (-(vessel_length/2)), 0]) 
     p2 = np.array([0, (vessel_length/2), 0])
