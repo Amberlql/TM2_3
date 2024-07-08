@@ -37,12 +37,12 @@ def main():
     # ============================================================
     
     number_of_slices = 20 #Defines the resolution
-    per_degree = 3 #Degree of line segments
-    minimum_degrees = 10 #Provide a treshold of the minimum value of degrees between the vessel and the tumor that you are interested in
+    per_degree = 1 #Degree of line segments
+    minimum_degrees = 40 #Provide a treshold of the minimum value of degrees between the vessel and the tumor that you are interested in
     example_plane = 10 #Provide as integer
-    vessel_wall = 1.3 #Provide the largest wall thickness in mm of the CA, SMA, CHA, SM or PV
+    vessel_wall = 1.5 #Provide the largest wall thickness in mm of the CA, SMA, CHA, SM or PV
     
-    #!Note that the vessel length, centerline and normals are needed for calculations as well, 
+    #!Note that the centerline and normals are needed for calculations as well, 
     #but this is integrated for the three mock-cases in this code
     
     
@@ -61,17 +61,13 @@ def main():
     #Case 3: low resolution, curved cylinder
 
     if mock_case == 1:
-        #Provide the length of the segmented vessel in mm 
-        vessel_length = 30 
-        
         #Load data
         tumor = trimesh.load('models/case1_tumor.STL')
         vessel = trimesh.load('models/case1_SMA.STL')
         object_meshes = {"tumor":tumor, "SMA":vessel} #Always add the tumor first and then the vessel
         
         #Compute the centerline of the straight cylinder
-        slice_thickness = vessel_length / number_of_slices
-        centerline_points, normal_points = centerline_straightcylinder(vessel_length, slice_thickness)
+        centerline_points, normal_points = centerline_straightcylinder(number_of_slices)
 
         #Visualize object_meshes in a 3D visualization plot to get insight into the patient case
         object_plotter = ObjectPlotter()
@@ -80,17 +76,13 @@ def main():
         object_plotter.add_points(centerline_points, color="black")
         
     elif mock_case == 2: 
-        #Provide the length of the segmented vessel in mm 
-        vessel_length = 30 
-        
         #Load data
         tumor = trimesh.load('models/case2_tumor.STL')
         vessel = trimesh.load('models/case2_SMA.STL')
         object_meshes = {"tumor":tumor, "SMA":vessel}
         
         #Compute the centerline of the straight cylinder
-        slice_thickness = vessel_length / number_of_slices
-        centerline_points, normal_points = centerline_straightcylinder(vessel_length, slice_thickness)
+        centerline_points, normal_points = centerline_straightcylinder(number_of_slices)
         
         #Visualize object_meshes in a 3D visualization plot to get insight into the patient case
         object_plotter = ObjectPlotter()
@@ -186,7 +178,7 @@ def main():
 
     #Calculate the maximum contact length and provide in which planes this contact is made and visualize this
     maximum_contact_length, plane_numbers_maximum_contact_length = feature_maximum_contact_length(all_distances_filtered, centerline_points)
-    print(f'The maximum contact length is {maximum_contact_length} and present in the following planes')
+    print(f'The maximum contact length is {maximum_contact_length} mm and present in the following planes')
     print(f'{plane_numbers_maximum_contact_length}')
     
     object_plotter2 = ObjectPlotter()
