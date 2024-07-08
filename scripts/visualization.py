@@ -33,9 +33,9 @@ class ObjectPlotter:
         self.ax.set_title(title)
         
         # Set labels
-        self.ax.set_xlabel('X')
-        self.ax.set_ylabel('Y')
-        self.ax.set_zlabel('Z')
+        self.ax.set_xlabel('X [mm]')
+        self.ax.set_ylabel('Y [mm]')
+        self.ax.set_zlabel('Z [mm]')
         
          # Scale axis equal
         self.ax.axis("equal")
@@ -64,8 +64,8 @@ class ContourPlotter:
         self.ax.set_title(title)
 
         # Set labels
-        self.ax.set_xlabel('X')
-        self.ax.set_ylabel('Y')
+        self.ax.set_xlabel('X [mm]')
+        self.ax.set_ylabel('Y [mm]')
 
         # Scale axis equal
         self.ax.axis("equal")
