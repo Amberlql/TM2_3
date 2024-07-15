@@ -45,7 +45,6 @@ def main():
     #!Note that the centerline and normals are needed for calculations as well, 
     #but this is integrated for the three mock-cases in this code
     
-    
     # ======================================================================================
     # Load data and compute centerline points and corresponding normals: MOCK CASE SPECIFIC
     # ======================================================================================
